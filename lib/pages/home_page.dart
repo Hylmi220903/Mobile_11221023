@@ -43,43 +43,77 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('ITKBarkas', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 2,
+        title: Row(
+          children: [
+            Icon(Icons.store, color: colorScheme.primary),
+            const SizedBox(width: 8),
+            const Text(
+              'ITKBarkas',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined),
             onPressed: () => context.go('/cart'),
+            tooltip: 'Cart',
           ),
           IconButton(
             icon: const Icon(Icons.person_outline),
             onPressed: () => context.go('/profile'),
+            tooltip: 'Profile',
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.menu),
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'More options',
             onSelected: (value) {
               if (value == 'login') {
                 context.go('/login');
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$value - Coming Soon!')),
+                  SnackBar(
+                    content: Text('$value - Coming Soon!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
                 );
               }
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 'login',
-                child: Row(children: [Icon(Icons.login), SizedBox(width: 8), Text('Login')]),
+                child: Row(
+                  children: [
+                    Icon(Icons.login),
+                    SizedBox(width: 12),
+                    Text('Login'),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'My Products',
-                child: Row(children: [Icon(Icons.inventory_2_outlined), SizedBox(width: 8), Text('My Products')]),
+                child: Row(
+                  children: [
+                    Icon(Icons.inventory_2_outlined),
+                    SizedBox(width: 12),
+                    Text('My Products'),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'My Orders',  
-                child: Row(children: [Icon(Icons.receipt_long_outlined), SizedBox(width: 8), Text('My Orders')]),
+                child: Row(
+                  children: [
+                    Icon(Icons.receipt_long_outlined),
+                    SizedBox(width: 12),
+                    Text('My Orders'),
+                  ],
+                ),
               ),
             ],
           ),
@@ -87,22 +121,50 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
+          // Sort Section with M3 dropdown
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              border: Border(
+                bottom: BorderSide(
+                  color: colorScheme.outlineVariant,
+                  width: 1,
+                ),
+              ),
+            ),
             child: Row(
               children: [
-                const Text('Sort: '),
+                Icon(
+                  Icons.sort,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Sort by:',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButton<String>(
                     value: _selectedSort,
                     isExpanded: true,
-                    items: _sortOptions.map((value) => DropdownMenuItem(
-                      value: value,
-                      child: Text(value),
-                    )).toList(),
+                    underline: const SizedBox(),
+                    items: _sortOptions.map((option) {
+                      return DropdownMenuItem<String>(
+                        value: option,
+                        child: Text(option),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       if (value != null) {
-                        setState(() => _selectedSort = value);
+                        setState(() {
+                          _selectedSort = value;
+                        });
                       }
                     },
                   ),
@@ -110,6 +172,8 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+          
+          // Product Grid
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
@@ -117,7 +181,7 @@ class _HomePageState extends State<HomePage> {
                 crossAxisCount: 2,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 0.7,
+                childAspectRatio: 0.62, // Adjusted for full-width button
               ),
               itemCount: _getSortedProducts().length,
               itemBuilder: (context, index) {
@@ -125,9 +189,18 @@ class _HomePageState extends State<HomePage> {
                 return ProductCard(
                   product: product,
                   onTap: () => context.go('/product/${product.id}'),
-                  onBuyNow: () => ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Buying ${product.name}...')),
-                  ),
+                  onBuyNow: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Adding ${product.name} to cart...'),
+                        behavior: SnackBarBehavior.floating,
+                        action: SnackBarAction(
+                          label: 'View Cart',
+                          onPressed: () => context.go('/cart'),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
