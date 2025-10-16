@@ -193,41 +193,6 @@ class _LoginPageState extends State<LoginPage> {
                               : const Text('Sign In'),
                         ),
                         
-                        const SizedBox(height: 16),
-                        
-                        // OR Divider
-                        Row(
-                          children: [
-                            Expanded(child: Divider(color: colorScheme.outlineVariant)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                'OR',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                            Expanded(child: Divider(color: colorScheme.outlineVariant)),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Social Login Buttons
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Google Sign In - Coming soon!'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.g_mobiledata, size: 24),
-                          label: const Text('Continue with Google'),
-                        ),
-                        
                         const SizedBox(height: 32),
                         
                         // Register Link
