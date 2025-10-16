@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/product.dart';
+import '../database/database.dart';
 
 class ProductCard extends StatefulWidget {
-  final Product product;
+  final Product product; // Product from database
   final VoidCallback onBuyNow;
   final VoidCallback? onTap;
 
@@ -49,7 +49,7 @@ class _ProductCardState extends State<ProductCard> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          widget.product.imageUrl,
+                          widget.product.imagePath, // Changed from imageUrl to imagePath
                           fit: BoxFit.contain,
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;

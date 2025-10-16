@@ -14,8 +14,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _storeNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _storeNameController = TextEditingController(); // Added store name controller
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
@@ -35,8 +35,8 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _storeNameController.dispose();
     _phoneController.dispose();
+    _storeNameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _database.close();
@@ -61,8 +61,8 @@ class _RegisterPageState extends State<RegisterPage> {
         await _database.registerUser(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim().toLowerCase(),
-          storeName: _storeNameController.text.trim(),
           phoneNumber: _phoneController.text.trim(),
+          storeName: _storeNameController.text.trim(),
           password: _passwordController.text,
         );
         
@@ -219,32 +219,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     
                     const SizedBox(height: 16),
                     
-                    // Store Name Field
-                    TextFormField(
-                      controller: _storeNameController,
-                      decoration: InputDecoration(
-                        labelText: 'Store Name',
-                        hintText: 'Enter your store name',
-                        prefixIcon: const Icon(Icons.store_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Nama toko harus diisi';
-                        }
-                        if (value.trim().length < 3) {
-                          return 'Nama toko minimal 3 karakter';
-                        }
-                        return null;
-                      },
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
                     // Phone Number Field
                     TextFormField(
                       controller: _phoneController,
@@ -275,6 +249,32 @@ class _RegisterPageState extends State<RegisterPage> {
                         }
                         if (value.length > 14) {
                           return 'Nomor telepon maksimal 14 digit';
+                        }
+                        return null;
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Store Name Field
+                    TextFormField(
+                      controller: _storeNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Store Name',
+                        hintText: 'Enter your store name',
+                        prefixIcon: const Icon(Icons.store_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Store Name harus diisi';
+                        }
+                        if (value.trim().length < 3) {
+                          return 'Store Name minimal 3 karakter';
                         }
                         return null;
                       },

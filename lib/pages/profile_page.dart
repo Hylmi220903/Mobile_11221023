@@ -14,8 +14,8 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isLoggedIn = false;
   String userName = 'Guest User';
   String userEmail = 'guest@example.com';
-  String? storeName;
   String? phoneNumber;
+  String? storeName; // Added store name
   int? userId;
 
   @override
@@ -34,8 +34,8 @@ class _ProfilePageState extends State<ProfilePage> {
       final name = prefs.getString('userName');
       
       if (id != null && email != null && name != null) {
-        // Get full user data from database
-        final database = AppDatabase();
+        // Get full user data from database using singleton
+        final database = await AppDatabase.getInstance();
         final user = await database.getUserById(id);
         
         if (user != null) {
@@ -44,12 +44,10 @@ class _ProfilePageState extends State<ProfilePage> {
             userId = user.id;
             userName = user.fullName;
             userEmail = user.email;
-            storeName = user.storeName;
             phoneNumber = user.phoneNumber;
+            storeName = user.storeName; // Load store name
           });
         }
-        
-        await database.close();
       }
     }
   }
@@ -122,23 +120,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       fontSize: 14,
                     ),
                   ),
-                  if (storeName != null && storeName!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.store, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          storeName!,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                   if (phoneNumber != null && phoneNumber!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Row(
@@ -151,6 +132,24 @@ class _ProfilePageState extends State<ProfilePage> {
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (storeName != null && storeName!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.store, size: 16, color: Colors.blue),
+                        const SizedBox(width: 4),
+                        Text(
+                          storeName!,
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

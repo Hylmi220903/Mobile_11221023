@@ -12,7 +12,6 @@ class Users extends Table {
   TextColumn get email => text().withLength(min: 1, max: 255).unique()();
   TextColumn get phoneNumber => text().withLength(min: 6, max: 14)();
   TextColumn get password => text().withLength(min: 8)();
-  TextColumn get storeName => text().withLength(min: 1, max: 255)(); // Store name for seller
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -59,7 +58,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3; // Updated to include storeName in Users table
+  int get schemaVersion => 2;
 
   // Create singleton instance
   static AppDatabase? _instance;
@@ -107,7 +106,6 @@ class AppDatabase extends _$AppDatabase {
     required String email,
     required String phoneNumber,
     required String password,
-    required String storeName, // Added storeName parameter
   }) async {
     // Validate fullName (only letters and spaces)
     if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(fullName)) {
@@ -134,11 +132,6 @@ class AppDatabase extends _$AppDatabase {
       throw Exception('Password minimal 8 karakter');
     }
 
-    // Validate store name
-    if (storeName.trim().isEmpty) {
-      throw Exception('Store Name tidak boleh kosong');
-    }
-
     // Check if email already exists
     final existingUser = await (select(users)
           ..where((tbl) => tbl.email.equals(email)))
@@ -157,7 +150,6 @@ class AppDatabase extends _$AppDatabase {
         email: email,
         phoneNumber: phoneNumber,
         password: hashedPassword,
-        storeName: storeName, // Include storeName
       ),
     );
   }
@@ -203,51 +195,6 @@ class AppDatabase extends _$AppDatabase {
   // Get all users (for admin purposes)
   Future<List<User>> getAllUsers() {
     return select(users).get();
-  }
-
-  // ============================================
-  // STORE METHODS
-  // ============================================
-
-  // Create new store
-  Future<int> createStore({
-    required String storeName,
-    required int ownerId,
-    String? description,
-  }) async {
-    return await into(stores).insert(
-      StoresCompanion.insert(
-        storeName: storeName,
-        ownerId: ownerId,
-        description: Value(description),
-      ),
-    );
-  }
-
-  // Get store by ID
-  Future<Store?> getStoreById(int storeId) {
-    return (select(stores)..where((tbl) => tbl.id.equals(storeId)))
-        .getSingleOrNull();
-  }
-
-  // Get stores by owner
-  Future<List<Store>> getStoresByOwner(int ownerId) {
-    return (select(stores)..where((tbl) => tbl.ownerId.equals(ownerId))).get();
-  }
-
-  // Get all stores
-  Future<List<Store>> getAllStores() {
-    return select(stores).get();
-  }
-
-  // Update store
-  Future<bool> updateStore(Store store) {
-    return update(stores).replace(store);
-  }
-
-  // Delete store
-  Future<int> deleteStore(int storeId) {
-    return (delete(stores)..where((tbl) => tbl.id.equals(storeId))).go();
   }
 
   // ============================================

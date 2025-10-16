@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../models/product.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/product_card.dart';
+import '../database/database.dart';
+import '../database/seed_data.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,6 +13,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late AppDatabase _database;
+  List<Product> _allProducts = []; // Product from database
+  bool _isLoading = true;
+  int? _currentUserId;
+
   // Sorting options
   String _selectedSort = 'By rating';
   final List<String> _sortOptions = [
@@ -38,8 +45,56 @@ class _HomePageState extends State<HomePage> {
   // Selected filters
   final Set<String> _selectedFilters = {};
 
+  @override
+  void initState() {
+    super.initState();
+    _initDatabase();
+  }
+
+  @override
+  void dispose() {
+    _database.close();
+    super.dispose();
+  }
+
+  Future<void> _initDatabase() async {
+    _database = AppDatabase();
+    
+    // Get current user ID
+    final prefs = await SharedPreferences.getInstance();
+    _currentUserId = prefs.getInt('userId');
+    
+    // Seed initial data (Admin Apple user, store, and products)
+    await seedInitialData(_database);
+    
+    // Load products from database
+    await _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final products = await _database.getAllProducts();
+      setState(() {
+        _allProducts = products;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading products: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   List<Product> _getFilteredAndSortedProducts() {
-    List<Product> products = List.from(Product.sampleProducts);
+    List<Product> products = List.from(_allProducts);
     
     // Apply filters
     if (_selectedFilters.isNotEmpty) {
@@ -69,7 +124,75 @@ class _HomePageState extends State<HomePage> {
     return products;
   }
 
-  void _showFilterDialog() {
+  Future<void> _addToCart(Product product) async {
+    if (_currentUserId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please login first to add items to cart'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        context.go('/login');
+      }
+      return;
+    }
+
+    try {
+      await _database.addToCart(
+        userId: _currentUserId!,
+        productId: product.id,
+        quantity: 1,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added ${product.name} to cart'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'View Cart',
+              textColor: Colors.white,
+              onPressed: () => context.go('/cart'),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    
+    setState(() {
+      _currentUserId = null;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Successfully logged out'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.go('/login');
+    }
+  }
+
+  void _showFiltersBottomSheet() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -215,6 +338,8 @@ class _HomePageState extends State<HomePage> {
             onSelected: (value) {
               if (value == 'login') {
                 context.go('/login');
+              } else if (value == 'logout') {
+                _handleLogout();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -224,38 +349,54 @@ class _HomePageState extends State<HomePage> {
                 );
               }
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'login',
-                child: Row(
-                  children: [
-                    Icon(Icons.login),
-                    SizedBox(width: 12),
-                    Text('Login'),
+            itemBuilder: (context) => _currentUserId == null
+                ? [
+                    // Menu untuk belum login
+                    const PopupMenuItem(
+                      value: 'login',
+                      child: Row(
+                        children: [
+                          Icon(Icons.login),
+                          SizedBox(width: 12),
+                          Text('Login'),
+                        ],
+                      ),
+                    ),
+                  ]
+                : [
+                    // Menu untuk sudah login
+                    const PopupMenuItem(
+                      value: 'My Products',
+                      child: Row(
+                        children: [
+                          Icon(Icons.inventory_2_outlined),
+                          SizedBox(width: 12),
+                          Text('My Products'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'My Orders',
+                      child: Row(
+                        children: [
+                          Icon(Icons.receipt_long_outlined),
+                          SizedBox(width: 12),
+                          Text('My Orders'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.red),
+                          SizedBox(width: 12),
+                          Text('Logout', style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
                   ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'My Products',
-                child: Row(
-                  children: [
-                    Icon(Icons.inventory_2_outlined),
-                    SizedBox(width: 12),
-                    Text('My Products'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'My Orders',  
-                child: Row(
-                  children: [
-                    Icon(Icons.receipt_long_outlined),
-                    SizedBox(width: 12),
-                    Text('My Orders'),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -280,7 +421,7 @@ class _HomePageState extends State<HomePage> {
                   child: SizedBox(
                     height: 48, // Fixed height untuk konsistensi
                     child: OutlinedButton.icon(
-                      onPressed: _showFilterDialog,
+                      onPressed: _showFiltersBottomSheet,
                       icon: const Icon(Icons.filter_list, size: 20),
                       label: Text(
                         _selectedFilters.isEmpty 
@@ -356,63 +497,54 @@ class _HomePageState extends State<HomePage> {
           
           // Product Grid or Empty Message
           Expanded(
-            child: filteredProducts.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.inventory_2_outlined,
-                        size: 80,
-                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Product is empty',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
+            child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : filteredProducts.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 80,
+                          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No products found in selected categories',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.62,
-                  ),
-                  itemCount: filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = filteredProducts[index];
-                    return ProductCard(
-                      product: product,
-                      onTap: () => context.go('/product/${product.id}'),
-                      onBuyNow: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Adding ${product.name} to cart...'),
-                            behavior: SnackBarBehavior.floating,
-                            action: SnackBarAction(
-                              label: 'View Cart',
-                              onPressed: () => context.go('/cart'),
-                            ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Product is empty',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
                           ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No products found in selected categories',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 0.62,
+                    ),
+                    itemCount: filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = filteredProducts[index];
+                      return ProductCard(
+                        product: product,
+                        onTap: () => context.go('/product/${product.id}'),
+                        onBuyNow: () => _addToCart(product),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

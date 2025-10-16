@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../models/product.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../database/database.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -12,35 +13,98 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
+  late AppDatabase _database;
   Product? product;
   bool isFavorite = false;
   int quantity = 1;
+  int? _currentUserId;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadProduct();
+    _initPage();
   }
 
-  void _loadProduct() {
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> _initPage() async {
+    _database = await AppDatabase.getInstance();
+    
+    final prefs = await SharedPreferences.getInstance();
+    _currentUserId = prefs.getInt('userId');
+    
+    await _loadProduct();
+  }
+
+  Future<void> _loadProduct() async {
+    setState(() => _isLoading = true);
+    
     try {
-      final foundProduct = Product.sampleProducts
-          .where((p) => p.id == widget.productId)
-          .toList();
+      final productId = int.parse(widget.productId);
+      final loadedProduct = await _database.getProductById(productId);
       
-      if (foundProduct.isNotEmpty) {
-        setState(() {
-          product = foundProduct.first;
-        });
-      } else {
-        setState(() {
-          product = Product.sampleProducts.first;
-        });
+      setState(() {
+        product = loadedProduct;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading product: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _addToCart() async {
+    if (_currentUserId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please login first to add items to cart'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        context.go('/login');
+      }
+      return;
+    }
+
+    if (product == null) return;
+
+    try {
+      await _database.addToCart(
+        userId: _currentUserId!,
+        productId: product!.id,
+        quantity: quantity,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added $quantity ${product!.name} to cart'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } catch (e) {
-      setState(() {
-        product = Product.sampleProducts.first;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -114,15 +178,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           width: double.infinity,
                           height: 300,
                           color: colorScheme.surfaceContainerHighest,
-                          child: Image.network(
-                            product!.imageUrl,
+                          child: Image.asset(
+                            product!.imagePath,
                             fit: BoxFit.contain,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
                             errorBuilder: (context, error, stackTrace) {
                               return Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -250,7 +308,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      product!.storeName,
+                                      'Official Store',
                                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -323,11 +381,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               const Divider(height: 24),
                               _buildSpecRow(context, 'Price', '\$${product!.price.toInt()}'),
                               const Divider(height: 24),
-                              _buildSpecRow(context, 'Store', product!.storeName),
+                              _buildSpecRow(context, 'Category', product!.category),
                               const Divider(height: 24),
                               _buildSpecRow(context, 'Sales', '${product!.soldCount} units sold'),
                               const Divider(height: 24),
-                              _buildSpecRow(context, 'Product ID', product!.id),
+                              _buildSpecRow(context, 'Stock', '${product!.stock} units'),
                             ],
                           ),
                         ),
@@ -385,14 +443,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       // Add to Cart Button
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Added $quantity ${product!.name} to cart'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
+                          onPressed: _addToCart,
                           icon: const Icon(Icons.shopping_cart_outlined, size: 20),
                           label: const Text('Add to Cart'),
                           style: OutlinedButton.styleFrom(
