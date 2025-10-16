@@ -31,8 +31,9 @@ class _ProductCardState extends State<ProductCard> {
         onTap: widget.onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Product Image with favorite button
@@ -111,7 +112,7 @@ class _ProductCardState extends State<ProductCard> {
                 ),
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               
               // Product Name
               Text(
@@ -123,7 +124,7 @@ class _ProductCardState extends State<ProductCard> {
                 overflow: TextOverflow.ellipsis,
               ),
               
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               
               // Product Model
               Text(
@@ -135,18 +136,18 @@ class _ProductCardState extends State<ProductCard> {
                 overflow: TextOverflow.ellipsis,
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               
               // Price
               Text(
                 '\$${widget.product.price.toInt()}',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               
               // Buy Button - Full Width
               SizedBox(
@@ -156,7 +157,7 @@ class _ProductCardState extends State<ProductCard> {
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -164,7 +165,7 @@ class _ProductCardState extends State<ProductCard> {
                   child: const Text(
                     'Buy Now',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

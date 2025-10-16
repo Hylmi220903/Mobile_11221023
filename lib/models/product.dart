@@ -8,6 +8,7 @@ class Product {
   final int soldCount;
   final String storeId;
   final String storeName;
+  final String category; // Added category field
 
   Product({
     required this.id,
@@ -19,6 +20,7 @@ class Product {
     this.soldCount = 0,
     this.storeId = 'default',
     this.storeName = 'iTech Store',
+    this.category = 'Smartphone', // Default category
   });
 
   // Sample product data
