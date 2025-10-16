@@ -53,12 +53,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _database.close();
+    // Don't close singleton instance
     super.dispose();
   }
 
   Future<void> _initDatabase() async {
-    _database = AppDatabase();
+    _database = await AppDatabase.getInstance();
     
     // Get current user ID
     final prefs = await SharedPreferences.getInstance();

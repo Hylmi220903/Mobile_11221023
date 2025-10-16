@@ -42,17 +42,23 @@ class _CartPageState extends State<CartPage> {
   }
 
   Future<void> _loadCartItems() async {
-    if (_currentUserId == null) return;
+    if (_currentUserId == null) {
+      print('⚠️ [CartPage] _currentUserId is null');
+      return;
+    }
     
+    print('📦 [CartPage] Loading cart items for userId: $_currentUserId');
     setState(() => _isLoading = true);
     
     try {
       final items = await _database.getCartItems(_currentUserId!);
+      print('✅ [CartPage] Loaded ${items.length} items from cart');
       setState(() {
         _cartItems = items;
         _isLoading = false;
       });
     } catch (e) {
+      print('❌ [CartPage] Error loading cart: $e');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

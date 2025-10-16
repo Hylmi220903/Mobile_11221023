@@ -71,6 +71,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           const SnackBar(
             content: Text('Please login first to add items to cart'),
             backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         context.go('/login');
@@ -78,14 +79,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return;
     }
 
-    if (product == null) return;
+    if (product == null) {
+      print('❌ Product is null!');
+      return;
+    }
+
+    print('✅ Calling addToCart - userId: $_currentUserId, productId: ${product!.id}, quantity: $quantity');
 
     try {
-      await _database.addToCart(
+      final result = await _database.addToCart(
         userId: _currentUserId!,
         productId: product!.id,
         quantity: quantity,
       );
+      
+      print('✅ addToCart result: $result');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -93,15 +101,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             content: Text('Added $quantity ${product!.name} to cart'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'View Cart',
+              textColor: Colors.white,
+              onPressed: () => context.go('/cart'),
+            ),
           ),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ Error in _addToCart: $e');
+      print('❌ StackTrace: $stackTrace');
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
