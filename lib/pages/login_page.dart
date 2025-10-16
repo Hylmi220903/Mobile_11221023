@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../database/database.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,11 +16,20 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  
+  late AppDatabase _database;
+
+  @override
+  void initState() {
+    super.initState();
+    _database = AppDatabase();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _database.close();
     super.dispose();
   }
 
@@ -26,18 +37,55 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       
-      await Future.delayed(const Duration(seconds: 2));
-      
-      setState(() => _isLoading = false);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful!'),
-            behavior: SnackBarBehavior.floating,
-          ),
+      try {
+        final user = await _database.loginUser(
+          email: _emailController.text.trim().toLowerCase(),
+          password: _passwordController.text,
         );
-        context.go('/');
+        
+        setState(() => _isLoading = false);
+        
+        if (user != null) {
+          // Save user session
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt('userId', user.id);
+          await prefs.setString('userEmail', user.email);
+          await prefs.setString('userName', user.fullName);
+          await prefs.setBool('isLoggedIn', true);
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Selamat datang, ${user.fullName}!'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.green,
+              ),
+            );
+            context.go('/');
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Email atau password salah'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        setState(() => _isLoading = false);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

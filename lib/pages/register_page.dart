@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import '../database/database.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -20,6 +22,14 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
   bool _acceptTerms = false;
+  
+  late AppDatabase _database;
+
+  @override
+  void initState() {
+    super.initState();
+    _database = AppDatabase();
+  }
 
   @override
   void dispose() {
@@ -29,28 +39,58 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _database.close();
     super.dispose();
   }
 
   Future<void> _handleRegister() async {
-    if (_formKey.currentState!.validate() && _acceptTerms) {
+    if (!_acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan setujui Terms of Service dan Privacy Policy'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       
-      // Simulasi delay register
-      await Future.delayed(const Duration(seconds: 2));
-      
-      setState(() => _isLoading = false);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful!')),
+      try {
+        await _database.registerUser(
+          fullName: _nameController.text.trim(),
+          email: _emailController.text.trim().toLowerCase(),
+          storeName: _storeNameController.text.trim(),
+          phoneNumber: _phoneController.text.trim(),
+          password: _passwordController.text,
         );
-        context.go('/login');
+        
+        setState(() => _isLoading = false);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registrasi berhasil! Silakan login.'),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.go('/login');
+        }
+      } catch (e) {
+        setState(() => _isLoading = false);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll('Exception: ', '')),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
-    } else if (!_acceptTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please accept the terms and conditions')),
-      );
     }
   }
 
@@ -123,9 +163,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     // Name Field
                     TextFormField(
                       controller: _nameController,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                      ],
                       decoration: InputDecoration(
                         labelText: 'Full Name',
-                        hintText: 'Enter your full name',
+                        hintText: 'Enter your full name (letters only)',
                         prefixIcon: const Icon(Icons.person_outline),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -135,10 +178,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your full name';
+                          return 'Nama lengkap harus diisi';
                         }
-                        if (value.length < 2) {
-                          return 'Name must be at least 2 characters';
+                        if (value.trim().length < 2) {
+                          return 'Nama minimal 2 karakter';
+                        }
+                        if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+                          return 'Nama hanya boleh berisi huruf';
                         }
                         return null;
                       },
@@ -152,7 +198,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         labelText: 'Email',
-                        hintText: 'Enter your email',
+                        hintText: 'example@email.com',
                         prefixIcon: const Icon(Icons.email_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -162,10 +208,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return 'Email harus diisi';
                         }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                          return 'Format email tidak valid';
                         }
                         return null;
                       },
@@ -188,10 +234,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your store name';
+                          return 'Nama toko harus diisi';
                         }
-                        if (value.length < 3) {
-                          return 'Store name must be at least 3 characters';
+                        if (value.trim().length < 3) {
+                          return 'Nama toko minimal 3 karakter';
                         }
                         return null;
                       },
@@ -203,9 +249,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(14),
+                      ],
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
-                        hintText: 'Enter your phone number',
+                        hintText: '081234567890 (6-14 digits)',
                         prefixIcon: const Icon(Icons.phone_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -215,10 +265,16 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
+                          return 'Nomor telepon harus diisi';
                         }
-                        if (value.length < 10) {
-                          return 'Phone number must be at least 10 digits';
+                        if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                          return 'Nomor telepon hanya boleh berisi angka';
+                        }
+                        if (value.length < 6) {
+                          return 'Nomor telepon minimal 6 digit';
+                        }
+                        if (value.length > 14) {
+                          return 'Nomor telepon maksimal 14 digit';
                         }
                         return null;
                       },
@@ -232,7 +288,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        hintText: 'Enter your password',
+                        hintText: 'Minimal 8 karakter',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -254,10 +310,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
+                          return 'Password harus diisi';
                         }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
+                        if (value.length < 8) {
+                          return 'Password minimal 8 karakter';
                         }
                         return null;
                       },
@@ -293,10 +349,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
+                          return 'Konfirmasi password harus diisi';
                         }
                         if (value != _passwordController.text) {
-                          return 'Passwords do not match';
+                          return 'Password tidak cocok';
                         }
                         return null;
                       },

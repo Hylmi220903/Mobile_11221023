@@ -1,8 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../database/database.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool isLoggedIn = false;
+  String userName = 'Guest User';
+  String userEmail = 'guest@example.com';
+  String? storeName;
+  String? phoneNumber;
+  int? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final loggedIn = prefs.getBool('isLoggedIn') ?? false;
+    
+    if (loggedIn) {
+      final id = prefs.getInt('userId');
+      final email = prefs.getString('userEmail');
+      final name = prefs.getString('userName');
+      
+      if (id != null && email != null && name != null) {
+        // Get full user data from database
+        final database = AppDatabase();
+        final user = await database.getUserById(id);
+        
+        if (user != null) {
+          setState(() {
+            isLoggedIn = true;
+            userId = user.id;
+            userName = user.fullName;
+            userEmail = user.email;
+            storeName = user.storeName;
+            phoneNumber = user.phoneNumber;
+          });
+        }
+        
+        await database.close();
+      }
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all session data
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Berhasil logout'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.go('/login');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,36 +98,74 @@ class ProfilePage extends StatelessWidget {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.blue.shade200,
-                    child: const Icon(
-                      Icons.person,
-                      size: 50,
-                      color: Colors.white,
+                    child: Text(
+                      userName.isNotEmpty ? userName[0].toUpperCase() : 'G',
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Guest User',
-                    style: TextStyle(
+                  Text(
+                    userName,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
-                    'guest@example.com',
-                    style: TextStyle(
+                  Text(
+                    userEmail,
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontSize: 14,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.go('/login'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
+                  if (storeName != null && storeName!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.store, size: 16, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          storeName!,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Text('Login to Account'),
-                  ),
+                  ],
+                  if (phoneNumber != null && phoneNumber!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.phone, size: 16, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          phoneNumber!,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  if (!isLoggedIn)
+                    ElevatedButton(
+                      onPressed: () => context.go('/login'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Login to Account'),
+                    ),
                 ],
               ),
             ),
@@ -94,27 +197,23 @@ class ProfilePage extends StatelessWidget {
             
             const SizedBox(height: 24),
             
-            // Logout Button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Logged out successfully')),
-                  );
-                  context.go('/');
-                },
-                icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text(
-                  'Logout',
-                  style: TextStyle(color: Colors.red),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+            // Logout Button (only show if logged in)
+            if (isLoggedIn)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _handleLogout,
+                  icon: const Icon(Icons.logout, color: Colors.red),
+                  label: const Text(
+                    'Logout',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
                 ),
               ),
-            ),
             
             const SizedBox(height: 24),
           ],
