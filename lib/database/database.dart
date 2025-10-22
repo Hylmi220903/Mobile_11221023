@@ -65,9 +65,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase? _instance;
   
   static Future<AppDatabase> getInstance() async {
-    if (_instance == null) {
-      _instance = AppDatabase();
-    }
+    _instance ??= AppDatabase();
     return _instance!;
   }
 
