@@ -8,6 +8,7 @@ part 'user_dao.dart';
 part 'store_dao.dart';
 part 'product_dao.dart';
 part 'cart_dao.dart';
+part 'wishlist_dao.dart';
 
 // Users Table
 class Users extends Table {
@@ -58,6 +59,19 @@ class CartItems extends Table {
   ];
 }
 
+// Wishlist Items Table
+class Wishlists extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get userId => integer().references(Users, #id, onDelete: KeyAction.cascade)();
+  IntColumn get productId => integer().references(Products, #id, onDelete: KeyAction.cascade)();
+  DateTimeColumn get addedAt => dateTime().withDefault(currentDateAndTime)();
+  
+  @override
+  List<Set<Column>>? get uniqueKeys => [
+    {userId, productId}, // One user can only have one entry per product in wishlist
+  ];
+}
+
 // Helper class to return cart item with product details
 class CartItemWithProduct {
   final CartItem cartItem;
@@ -70,14 +84,14 @@ class CartItemWithProduct {
 }
 
 @DriftDatabase(
-  tables: [Users, Stores, Products, CartItems],
-  daos: [UserDao, StoreDao, ProductDao, CartDao],
+  tables: [Users, Stores, Products, CartItems, Wishlists],
+  daos: [UserDao, StoreDao, ProductDao, CartDao, WishlistDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3; // Updated to include storeName in Users table
+  int get schemaVersion => 4; // Updated to include Wishlists table
 
   // Create singleton instance
   static AppDatabase? _instance;
@@ -108,6 +122,10 @@ class AppDatabase extends _$AppDatabase {
           
           // Note: Data migration from Users.storeName to Stores table
           // should be handled manually if needed
+        }
+        if (from < 4) {
+          // Add Wishlists table
+          await m.createTable(wishlists);
         }
       },
     );

@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product; // Product from database
   final VoidCallback onBuyNow;
   final VoidCallback? onTap;
+  final int? currentUserId; // Pass user ID from parent
 
   const ProductCard({
     super.key,
     required this.product,
     required this.onBuyNow,
     this.onTap,
+    this.currentUserId,
   });
 
   @override
@@ -18,7 +21,108 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
-  bool isFavorite = false;
+  bool isInWishlist = false;
+  bool isLoading = false;
+  late AppDatabase _database;
+  int? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initWishlist();
+  }
+
+  Future<void> _initWishlist() async {
+    _database = await AppDatabase.getInstance();
+    
+    // Get user ID from widget or SharedPreferences
+    if (widget.currentUserId != null) {
+      _userId = widget.currentUserId;
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      _userId = prefs.getInt('userId');
+    }
+    
+    // Check if product is in wishlist
+    if (_userId != null) {
+      final inWishlist = await _database.wishlistDao.isInWishlist(
+        userId: _userId!,
+        productId: widget.product.id,
+      );
+      if (mounted) {
+        setState(() => isInWishlist = inWishlist);
+      }
+    }
+  }
+
+  Future<void> _toggleWishlist() async {
+    if (_userId == null) {
+      // Show login prompt
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login untuk menambahkan ke wishlist'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      if (isInWishlist) {
+        // Remove from wishlist
+        await _database.wishlistDao.removeFromWishlist(
+          userId: _userId!,
+          productId: widget.product.id,
+        );
+        if (mounted) {
+          setState(() {
+            isInWishlist = false;
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${widget.product.name} dihapus dari wishlist'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
+      } else {
+        // Add to wishlist
+        await _database.wishlistDao.addToWishlist(
+          userId: _userId!,
+          productId: widget.product.id,
+        );
+        if (mounted) {
+          setState(() {
+            isInWishlist = true;
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${widget.product.name} ditambahkan ke wishlist'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,15 +210,17 @@ class _ProductCardState extends State<ProductCard> {
                       top: 4,
                       right: 4,
                       child: IconButton.filledTonal(
-                        onPressed: () {
-                          setState(() {
-                            isFavorite = !isFavorite;
-                          });
-                        },
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          size: 18,
-                        ),
+                        onPressed: isLoading ? null : _toggleWishlist,
+                        icon: isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Icon(
+                                isInWishlist ? Icons.favorite : Icons.favorite_border,
+                                size: 18,
+                              ),
                         iconSize: 18,
                         padding: const EdgeInsets.all(4),
                         constraints: const BoxConstraints(
@@ -122,7 +228,7 @@ class _ProductCardState extends State<ProductCard> {
                           minHeight: 32,
                         ),
                         style: IconButton.styleFrom(
-                          foregroundColor: isFavorite ? Colors.red : null,
+                          foregroundColor: isInWishlist ? Colors.red : null,
                         ),
                       ),
                     ),

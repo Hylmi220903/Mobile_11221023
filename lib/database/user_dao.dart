@@ -98,6 +98,57 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
     return update(users).replace(user);
   }
 
+  // Update user profile
+  Future<int> updateUserProfile({
+    required int id,
+    required String fullName,
+    required String email,
+    required String phoneNumber,
+    required String storeName,
+  }) async {
+    // Validate fullName (only letters and spaces)
+    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(fullName)) {
+      throw Exception('Full Name harus hanya berisi huruf');
+    }
+
+    // Validate email format
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      throw Exception('Format email tidak valid');
+    }
+
+    // Validate phone number (only numbers)
+    if (!RegExp(r'^[0-9]+$').hasMatch(phoneNumber)) {
+      throw Exception('Phone Number harus hanya berisi angka');
+    }
+
+    // Validate phone number length
+    if (phoneNumber.length < 6 || phoneNumber.length > 14) {
+      throw Exception('Phone Number harus antara 6-14 digit');
+    }
+
+    // Validate store name
+    if (storeName.trim().isEmpty) {
+      throw Exception('Store Name tidak boleh kosong');
+    }
+
+    // Check if email already exists for other users
+    final existingUser = await (select(users)
+          ..where((tbl) => tbl.email.equals(email) & tbl.id.equals(id).not()))
+        .getSingleOrNull();
+
+    if (existingUser != null) {
+      throw Exception('Email sudah digunakan oleh user lain');
+    }
+
+    return await (update(users)..where((tbl) => tbl.id.equals(id)))
+        .write(UsersCompanion(
+      fullName: Value(fullName),
+      email: Value(email),
+      phoneNumber: Value(phoneNumber),
+      storeName: Value(storeName),
+    ));
+  }
+
   // Delete user
   Future<int> deleteUser(int userId) {
     return (delete(users)..where((tbl) => tbl.id.equals(userId))).go();

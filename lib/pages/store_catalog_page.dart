@@ -30,7 +30,7 @@ class _StoreCatalogPageState extends State<StoreCatalogPage> {
     'By price (Highest)',
   ];
   
-  Set<String> _selectedFilters = {};
+  final Set<String> _selectedFilters = {};
   final List<String> _categories = [
     'Smartphone',
     'Laptop',
@@ -214,11 +214,13 @@ class _StoreCatalogPageState extends State<StoreCatalogPage> {
                   title: Text(option),
                   value: option,
                   groupValue: _selectedSort,
-                  onChanged: (String? value) {
-                    setState(() {
-                      _selectedSort = value!;
-                    });
-                    Navigator.pop(context);
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedSort = value;
+                      });
+                      Navigator.pop(context);
+                    }
                   },
                 );
               }),

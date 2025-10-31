@@ -9,6 +9,8 @@ import 'pages/my_products_page.dart';
 import 'pages/my_orders_page.dart';
 import 'pages/add_edit_product_page.dart';
 import 'pages/store_catalog_page.dart';
+import 'pages/edit_profile_page.dart';
+import 'pages/wishlist_page.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -74,6 +76,18 @@ final GoRouter router = GoRouter(
         final storeId = state.pathParameters['id']!;
         return StoreCatalogPage(storeId: storeId);
       },
+    ),
+    
+    GoRoute(
+      path: '/edit-profile',
+      name: 'edit_profile',
+      builder: (context, state) => const EditProfilePage(),
+    ),
+    
+    GoRoute(
+      path: '/wishlist',
+      name: 'wishlist',
+      builder: (context, state) => const WishlistPage(),
     ),
     
     GoRoute(

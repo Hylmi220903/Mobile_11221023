@@ -173,7 +173,15 @@ class _ProfilePageState extends State<ProfilePage> {
             
             // Menu Options
             _buildMenuSection('Account', [
-              _MenuItem(Icons.person_outline, 'Edit Profile', () {}),
+              _MenuItem(Icons.person_outline, 'Edit Profile', () {
+                if (isLoggedIn) {
+                  context.push('/edit-profile').then((_) => _loadUserData());
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Silakan login terlebih dahulu')),
+                  );
+                }
+              }),
               _MenuItem(Icons.location_on, 'Addresses', () {}),
               _MenuItem(Icons.payment_outlined, 'Payment Methods', () {}),
             ]),
@@ -181,8 +189,24 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 16),
             
             _buildMenuSection('Orders', [
-              _MenuItem(Icons.shopping_bag_outlined, 'My Orders', () {}),
-              _MenuItem(Icons.favorite_outline, 'Wishlist', () {}),
+              _MenuItem(Icons.shopping_bag_outlined, 'My Orders', () {
+                if (isLoggedIn) {
+                  context.push('/my-orders');
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Silakan login terlebih dahulu')),
+                  );
+                }
+              }),
+              _MenuItem(Icons.favorite_outline, 'Wishlist', () {
+                if (isLoggedIn) {
+                  context.push('/wishlist');
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Silakan login terlebih dahulu')),
+                  );
+                }
+              }),
               _MenuItem(Icons.history, 'Order History', () {}),
             ]),
             
