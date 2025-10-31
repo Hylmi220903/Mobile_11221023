@@ -8,6 +8,7 @@ import 'pages/product_detail_page.dart';
 import 'pages/my_products_page.dart';
 import 'pages/my_orders_page.dart';
 import 'pages/add_edit_product_page.dart';
+import 'pages/store_catalog_page.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -63,6 +64,15 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final productId = int.parse(state.pathParameters['id']!);
         return AddEditProductPage(productId: productId);
+      },
+    ),
+    
+    GoRoute(
+      path: '/store/:id',
+      name: 'store_catalog',
+      builder: (context, state) {
+        final storeId = state.pathParameters['id']!;
+        return StoreCatalogPage(storeId: storeId);
       },
     ),
     

@@ -15,6 +15,7 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   late AppDatabase _database;
   Product? product;
+  Store? store;
   bool isFavorite = false;
   int quantity = 1;
   int? _currentUserId;
@@ -44,9 +45,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final productId = int.parse(widget.productId);
       final loadedProduct = await _database.productDao.getProductById(productId);
       
-      setState(() {
-        product = loadedProduct;
-      });
+      if (loadedProduct != null) {
+        // Load store information
+        final loadedStore = await _database.storeDao.getStoreById(loadedProduct.storeId);
+        
+        setState(() {
+          product = loadedProduct;
+          store = loadedStore;
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,29 +197,64 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           width: double.infinity,
                           height: 300,
                           color: colorScheme.surfaceContainerHighest,
-                          child: Image.asset(
-                            product!.imagePath,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.phone_android,
-                                    size: 80,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Image not available',
-                                    style: TextStyle(
-                                      color: colorScheme.onSurfaceVariant,
+                          child: product!.imagePath.startsWith('http')
+                            ? Image.network(
+                                product!.imagePath,
+                                fit: BoxFit.contain,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.phone_android,
+                                        size: 80,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Image not available',
+                                        style: TextStyle(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                product!.imagePath,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.phone_android,
+                                        size: 80,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Image not available',
+                                        style: TextStyle(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
                         ),
                       ),
 
@@ -298,54 +340,63 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                       // Store Info
                       Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          onTap: store != null
+                              ? () => context.push('/store/${store!.id}')
+                              : null,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.store,
+                                    color: colorScheme.onPrimaryContainer,
+                                  ),
                                 ),
-                                child: Icon(
-                                  Icons.store,
-                                  color: colorScheme.onPrimaryContainer,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Official Store',
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        store?.storeName ?? 'Loading...',
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.star,
-                                          color: Colors.amber,
-                                          size: 16,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '4.8  1,234 products',
-                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: colorScheme.onSurfaceVariant,
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.star,
+                                            color: Colors.amber,
+                                            size: 16,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '4.8  1,234 products',
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Icon(
+                                  Icons.chevron_right,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
