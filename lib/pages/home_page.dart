@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoading = true);
     
     try {
-      final products = await _database.getAllProducts();
+      final products = await _database.productDao.getAllProducts();
       setState(() {
         _allProducts = products;
         _isLoading = false;
@@ -141,7 +141,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     try {
-      await _database.addToCart(
+      await _database.cartDao.addToCart(
         userId: _currentUserId!,
         productId: product.id,
         quantity: 1,

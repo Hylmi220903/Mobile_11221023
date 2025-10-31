@@ -44,11 +44,11 @@ class _MyProductsPageState extends State<MyProductsPage> {
     
     try {
       // Get user's store
-      final stores = await _database.getStoresByOwner(_currentUserId!);
+      final stores = await _database.storeDao.getStoresByOwner(_currentUserId!);
       if (stores.isNotEmpty) {
         _userStoreId = stores.first.id;
         // Get products from user's store
-        final products = await _database.getProductsByStore(_userStoreId!);
+        final products = await _database.productDao.getProductsByStore(_userStoreId!);
         setState(() {
           _myProducts = products;
           _isLoading = false;
@@ -94,7 +94,7 @@ class _MyProductsPageState extends State<MyProductsPage> {
 
     if (confirm == true) {
       try {
-        await _database.deleteProduct(product.id);
+        await _database.productDao.deleteProduct(product.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

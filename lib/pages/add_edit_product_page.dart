@@ -69,14 +69,14 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
 
     if (_currentUserId != null) {
       // Get user's store
-      final stores = await _database.getStoresByOwner(_currentUserId!);
+      final stores = await _database.storeDao.getStoresByOwner(_currentUserId!);
       if (stores.isNotEmpty) {
         _userStoreId = stores.first.id;
       } else {
         // Create store if not exists
-        final user = await _database.getUserById(_currentUserId!);
+        final user = await _database.userDao.getUserById(_currentUserId!);
         if (user != null) {
-          _userStoreId = await _database.createStore(
+          _userStoreId = await _database.storeDao.createStore(
             storeName: user.storeName,
             ownerId: _currentUserId!,
             description: 'My Store',
@@ -95,7 +95,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
     setState(() => _isLoading = true);
     
     try {
-      final product = await _database.getProductById(widget.productId!);
+      final product = await _database.productDao.getProductById(widget.productId!);
       if (product != null) {
         setState(() {
           _existingProduct = product;
@@ -139,7 +139,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
     try {
       if (widget.productId == null) {
         // Add new product
-        await _database.addProduct(
+        await _database.productDao.addProduct(
           name: _nameController.text,
           model: _modelController.text,
           price: double.parse(_priceController.text),
@@ -171,7 +171,7 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
           category: _selectedCategory,
         );
         
-        await _database.updateProduct(updatedProduct);
+        await _database.productDao.updateProduct(updatedProduct);
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

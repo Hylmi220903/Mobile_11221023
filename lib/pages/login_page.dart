@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _isLoading = true);
       
       try {
-        final user = await _database.loginUser(
+        final user = await _database.userDao.loginUser(
           email: _emailController.text.trim().toLowerCase(),
           password: _passwordController.text,
         );

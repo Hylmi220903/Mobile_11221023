@@ -42,7 +42,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Future<void> _loadProduct() async {
     try {
       final productId = int.parse(widget.productId);
-      final loadedProduct = await _database.getProductById(productId);
+      final loadedProduct = await _database.productDao.getProductById(productId);
       
       setState(() {
         product = loadedProduct;
@@ -82,7 +82,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     print('✅ Calling addToCart - userId: $_currentUserId, productId: ${product!.id}, quantity: $quantity');
 
     try {
-      final result = await _database.addToCart(
+      final result = await _database.cartDao.addToCart(
         userId: _currentUserId!,
         productId: product!.id,
         quantity: quantity,

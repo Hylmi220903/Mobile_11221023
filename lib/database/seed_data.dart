@@ -5,7 +5,7 @@ Future<void> seedInitialData(AppDatabase database) async {
   try {
     // Check if products already exist (more reliable than checking users)
     try {
-      final existingProducts = await database.getAllProducts();
+      final existingProducts = await database.productDao.getAllProducts();
       if (existingProducts.isNotEmpty) {
         print('✓ Data already seeded (${existingProducts.length} products found).');
         return;
@@ -17,7 +17,7 @@ Future<void> seedInitialData(AppDatabase database) async {
     // Check if Admin Apple user already exists
     User? adminUser;
     try {
-      adminUser = await database.getUserByEmail('apple123@gmail.com');
+      adminUser = await database.userDao.getUserByEmail('apple123@gmail.com');
     } catch (e) {
       print('Admin user does not exist yet.');
     }
@@ -29,7 +29,7 @@ Future<void> seedInitialData(AppDatabase database) async {
     } else {
       // 1. Create Admin Apple user
       print('Creating Admin Apple user...');
-      adminUserId = await database.registerUser(
+      adminUserId = await database.userDao.registerUser(
         fullName: 'Admin Apple',
         email: 'apple123@gmail.com',
         phoneNumber: '082357163888',
@@ -40,7 +40,7 @@ Future<void> seedInitialData(AppDatabase database) async {
     }
 
     // Check if Apple Store already exists
-    final existingStores = await database.getStoresByOwner(adminUserId);
+    final existingStores = await database.storeDao.getStoresByOwner(adminUserId);
     int appleStoreId;
     
     if (existingStores.isNotEmpty) {
@@ -49,7 +49,7 @@ Future<void> seedInitialData(AppDatabase database) async {
     } else {
       // 2. Create Apple Store Official
       print('Creating Apple Store Official...');
-      appleStoreId = await database.createStore(
+      appleStoreId = await database.storeDao.createStore(
         storeName: 'Apple Store Official',
         ownerId: adminUserId,
         description: 'Official Apple products store with authentic devices and accessories',
@@ -124,7 +124,7 @@ Future<void> seedInitialData(AppDatabase database) async {
 
     int productCount = 0;
     for (var productData in productsData) {
-      await database.addProduct(
+      await database.productDao.addProduct(
         name: productData['name'] as String,
         model: productData['model'] as String,
         price: productData['price'] as double,

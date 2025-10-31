@@ -37,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (id != null && email != null && name != null) {
         // Get full user data from database using singleton
         final database = await AppDatabase.getInstance();
-        final user = await database.getUserById(id);
+        final user = await database.userDao.getUserById(id);
         
         if (user != null) {
           setState(() {

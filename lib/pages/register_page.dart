@@ -58,7 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
       setState(() => _isLoading = true);
       
       try {
-        await _database.registerUser(
+        await _database.userDao.registerUser(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim().toLowerCase(),
           phoneNumber: _phoneController.text.trim(),

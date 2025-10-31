@@ -52,7 +52,7 @@ class _CartPageState extends State<CartPage> {
     setState(() => _isLoading = true);
     
     try {
-      final items = await _database.getCartItems(_currentUserId!);
+      final items = await _database.cartDao.getCartItems(_currentUserId!);
       print('✅ [CartPage] Loaded ${items.length} items from cart');
       setState(() {
         _cartItems = items;
@@ -74,7 +74,7 @@ class _CartPageState extends State<CartPage> {
 
   Future<void> _updateQuantity(int cartItemId, int newQuantity) async {
     try {
-      await _database.updateCartItemQuantity(cartItemId, newQuantity);
+      await _database.cartDao.updateCartItemQuantity(cartItemId, newQuantity);
       await _loadCartItems();
     } catch (e) {
       if (mounted) {
@@ -90,7 +90,7 @@ class _CartPageState extends State<CartPage> {
 
   Future<void> _removeItem(int cartItemId, String productName) async {
     try {
-      await _database.removeFromCart(cartItemId);
+      await _database.cartDao.removeFromCart(cartItemId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

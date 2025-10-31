@@ -1852,6 +1852,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $StoresTable stores = $StoresTable(this);
   late final $ProductsTable products = $ProductsTable(this);
   late final $CartItemsTable cartItems = $CartItemsTable(this);
+  late final UserDao userDao = UserDao(this as AppDatabase);
+  late final StoreDao storeDao = StoreDao(this as AppDatabase);
+  late final ProductDao productDao = ProductDao(this as AppDatabase);
+  late final CartDao cartDao = CartDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3623,4 +3627,23 @@ class $AppDatabaseManager {
       $$ProductsTableTableManager(_db, _db.products);
   $$CartItemsTableTableManager get cartItems =>
       $$CartItemsTableTableManager(_db, _db.cartItems);
+}
+
+mixin _$UserDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+}
+mixin _$StoreDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+  $StoresTable get stores => attachedDatabase.stores;
+}
+mixin _$ProductDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+  $StoresTable get stores => attachedDatabase.stores;
+  $ProductsTable get products => attachedDatabase.products;
+}
+mixin _$CartDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+  $StoresTable get stores => attachedDatabase.stores;
+  $ProductsTable get products => attachedDatabase.products;
+  $CartItemsTable get cartItems => attachedDatabase.cartItems;
 }
