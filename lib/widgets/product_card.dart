@@ -140,8 +140,8 @@ class _ProductCardState extends State<ProductCard> {
               
               // Price
               Text(
-                '\$${widget.product.price.toInt()}',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                'Rp ${widget.product.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),

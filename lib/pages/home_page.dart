@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/product_card.dart';
+import '../widgets/main_layout.dart';
 import '../database/database.dart';
 import '../database/seed_data.dart';
 
@@ -308,98 +309,71 @@ class _HomePageState extends State<HomePage> {
     final colorScheme = Theme.of(context).colorScheme;
     final filteredProducts = _getFilteredAndSortedProducts();
     
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Icon(Icons.store, color: colorScheme.primary),
-            const SizedBox(width: 8),
-            const Text(
-              'ITKBarkas',
-              style: TextStyle(fontWeight: FontWeight.bold),
+    return MainLayout(
+      currentIndex: 0,
+      child: Scaffold(
+        backgroundColor: colorScheme.surface,
+        appBar: AppBar(
+          title: Row(
+            children: [
+              Icon(Icons.store, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              const Text(
+                'ITKBarkas',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                showSearch(
+                  context: context,
+                  delegate: ProductSearchDelegate(_allProducts, _addToCart),
+                );
+              },
+              tooltip: 'Search',
+            ),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              tooltip: 'More options',
+              onSelected: (value) {
+                if (value == 'login') {
+                  context.go('/login');
+                } else if (value == 'logout') {
+                  _handleLogout();
+                }
+              },
+              itemBuilder: (context) => _currentUserId == null
+                  ? [
+                      const PopupMenuItem(
+                        value: 'login',
+                        child: Row(
+                          children: [
+                            Icon(Icons.login),
+                            SizedBox(width: 12),
+                            Text('Login'),
+                          ],
+                        ),
+                      ),
+                    ]
+                  : [
+                      const PopupMenuItem(
+                        value: 'logout',
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, color: Colors.red),
+                            SizedBox(width: 12),
+                            Text('Logout', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart_outlined),
-            onPressed: () => context.go('/cart'),
-            tooltip: 'Cart',
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => context.go('/profile'),
-            tooltip: 'Profile',
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            tooltip: 'More options',
-            onSelected: (value) {
-              if (value == 'login') {
-                context.go('/login');
-              } else if (value == 'logout') {
-                _handleLogout();
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('$value - Coming Soon!'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-            itemBuilder: (context) => _currentUserId == null
-                ? [
-                    // Menu untuk belum login
-                    const PopupMenuItem(
-                      value: 'login',
-                      child: Row(
-                        children: [
-                          Icon(Icons.login),
-                          SizedBox(width: 12),
-                          Text('Login'),
-                        ],
-                      ),
-                    ),
-                  ]
-                : [
-                    // Menu untuk sudah login
-                    const PopupMenuItem(
-                      value: 'My Products',
-                      child: Row(
-                        children: [
-                          Icon(Icons.inventory_2_outlined),
-                          SizedBox(width: 12),
-                          Text('My Products'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'My Orders',
-                      child: Row(
-                        children: [
-                          Icon(Icons.receipt_long_outlined),
-                          SizedBox(width: 12),
-                          Text('My Orders'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuDivider(),
-                    const PopupMenuItem(
-                      value: 'logout',
-                      child: Row(
-                        children: [
-                          Icon(Icons.logout, color: Colors.red),
-                          SizedBox(width: 12),
-                          Text('Logout', style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
-          ),
-        ],
-      ),
       body: Column(
         children: [
           // Filters and Sort Section
@@ -548,6 +522,137 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+      ),
+    );
+  }
+}
+
+// Search Delegate
+class ProductSearchDelegate extends SearchDelegate<Product?> {
+  final List<Product> products;
+  final Function(Product) onAddToCart;
+
+  ProductSearchDelegate(this.products, this.onAddToCart);
+
+  @override
+  String get searchFieldLabel => 'Search products...';
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: () {
+            query = '';
+          },
+        ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return _buildSearchResults(context);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return _buildSearchResults(context);
+  }
+
+  Widget _buildSearchResults(BuildContext context) {
+    final results = products.where((product) =>
+      product.name.toLowerCase().contains(query.toLowerCase()) ||
+      product.model.toLowerCase().contains(query.toLowerCase()) ||
+      product.description.toLowerCase().contains(query.toLowerCase())
+    ).toList();
+
+    if (query.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Search for products',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (results.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No products found',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try different keywords',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.62,
+      ),
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final product = results[index];
+        return ProductCard(
+          product: product,
+          onTap: () {
+            close(context, null);
+            context.go('/product/${product.id}');
+          },
+          onBuyNow: () {
+            onAddToCart(product);
+          },
+        );
+      },
     );
   }
 }

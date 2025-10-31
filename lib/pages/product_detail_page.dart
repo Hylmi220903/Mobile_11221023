@@ -18,7 +18,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   bool isFavorite = false;
   int quantity = 1;
   int? _currentUserId;
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -41,18 +40,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Future<void> _loadProduct() async {
-    setState(() => _isLoading = true);
-    
     try {
       final productId = int.parse(widget.productId);
       final loadedProduct = await _database.getProductById(productId);
       
       setState(() {
         product = loadedProduct;
-        _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -245,8 +240,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                       // Price
                       Text(
-                        '\$${product!.price.toInt()}',
-                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        'Rp ${product!.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: colorScheme.primary,
                         ),
@@ -396,7 +391,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             children: [
                               _buildSpecRow(context, 'Model', product!.model),
                               const Divider(height: 24),
-                              _buildSpecRow(context, 'Price', '\$${product!.price.toInt()}'),
+                              _buildSpecRow(context, 'Price', 'Rp ${product!.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}'),
                               const Divider(height: 24),
                               _buildSpecRow(context, 'Category', product!.category),
                               const Divider(height: 24),

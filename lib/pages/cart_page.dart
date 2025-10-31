@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database.dart';
+import '../widgets/main_layout.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -121,22 +122,22 @@ class _CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shopping Cart'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
+    return MainLayout(
+      currentIndex: 1,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Shopping Cart'),
+          automaticallyImplyLeading: false,
         ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _currentUserId == null
+                ? _buildLoginPrompt()
+                : _cartItems.isEmpty
+                    ? _buildEmptyCart()
+                    : _buildCartList(),
+        bottomNavigationBar: _cartItems.isNotEmpty ? _buildCheckoutBar() : null,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _currentUserId == null
-              ? _buildLoginPrompt()
-              : _cartItems.isEmpty
-                  ? _buildEmptyCart()
-                  : _buildCartList(),
-      bottomNavigationBar: _cartItems.isNotEmpty ? _buildCheckoutBar() : null,
     );
   }
 
@@ -333,9 +334,9 @@ class _CartPageState extends State<CartPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '\$${product.price.toStringAsFixed(2)}',
+                              'Rp ${product.price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
                               style: const TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF0067b3),
                               ),
@@ -462,14 +463,14 @@ class _CartPageState extends State<CartPage> {
                 const Text(
                   'Total:',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  '\$${total.toStringAsFixed(2)}',
+                  'Rp ${total.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF0067b3),
                   ),
