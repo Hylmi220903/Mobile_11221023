@@ -39,6 +39,28 @@ Future<void> seedInitialData(AppDatabase database) async {
       print('✓ Admin Apple user created with ID: $adminUserId');
     }
 
+    // 2. Create Test Account for testing purposes
+    User? testUser;
+    try {
+      testUser = await database.userDao.getUserByEmail('tes@gmail.com');
+    } catch (e) {
+      print('Test user does not exist yet.');
+    }
+
+    if (testUser != null) {
+      print('✓ Test Account already exists (ID: ${testUser.id})');
+    } else {
+      print('Creating Test Account...');
+      final testUserId = await database.userDao.registerUser(
+        fullName: 'TestAccount',
+        email: 'tes@gmail.com',
+        phoneNumber: '08123456789',
+        storeName: 'Test123',
+        password: 'tes12345',
+      );
+      print('✓ Test Account created with ID: $testUserId');
+    }
+
     // Check if Apple Store already exists
     final existingStores = await database.storeDao.getStoresByOwner(adminUserId);
     int appleStoreId;
@@ -143,6 +165,7 @@ Future<void> seedInitialData(AppDatabase database) async {
     print('✅ Initial data seeding completed!');
     print('========================================');
     print('Admin User: apple123@gmail.com / apple1234!');
+    print('Test Account: tes@gmail.com / tes12345');
     print('Store: Apple Store Official (ID: $appleStoreId)');
     print('Products: $productCount items added');
     print('========================================\n');

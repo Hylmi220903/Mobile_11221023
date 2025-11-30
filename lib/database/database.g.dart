@@ -2151,6 +2151,806 @@ class WishlistsCompanion extends UpdateCompanion<Wishlist> {
   }
 }
 
+class $AddressesTable extends Addresses
+    with TableInfo<$AddressesTable, AddressesData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AddressesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<int> userId = GeneratedColumn<int>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _recipientNameMeta = const VerificationMeta(
+    'recipientName',
+  );
+  @override
+  late final GeneratedColumn<String> recipientName = GeneratedColumn<String>(
+    'recipient_name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 255,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phoneNumberMeta = const VerificationMeta(
+    'phoneNumber',
+  );
+  @override
+  late final GeneratedColumn<String> phoneNumber = GeneratedColumn<String>(
+    'phone_number',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 6,
+      maxTextLength: 20,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _provinceMeta = const VerificationMeta(
+    'province',
+  );
+  @override
+  late final GeneratedColumn<String> province = GeneratedColumn<String>(
+    'province',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cityMeta = const VerificationMeta('city');
+  @override
+  late final GeneratedColumn<String> city = GeneratedColumn<String>(
+    'city',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _districtMeta = const VerificationMeta(
+    'district',
+  );
+  @override
+  late final GeneratedColumn<String> district = GeneratedColumn<String>(
+    'district',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 100,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _postalCodeMeta = const VerificationMeta(
+    'postalCode',
+  );
+  @override
+  late final GeneratedColumn<String> postalCode = GeneratedColumn<String>(
+    'postal_code',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 10,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _streetAddressMeta = const VerificationMeta(
+    'streetAddress',
+  );
+  @override
+  late final GeneratedColumn<String> streetAddress = GeneratedColumn<String>(
+    'street_address',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _detailAddressMeta = const VerificationMeta(
+    'detailAddress',
+  );
+  @override
+  late final GeneratedColumn<String> detailAddress = GeneratedColumn<String>(
+    'detail_address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isMainAddressMeta = const VerificationMeta(
+    'isMainAddress',
+  );
+  @override
+  late final GeneratedColumn<bool> isMainAddress = GeneratedColumn<bool>(
+    'is_main_address',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_main_address" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isStoreAddressMeta = const VerificationMeta(
+    'isStoreAddress',
+  );
+  @override
+  late final GeneratedColumn<bool> isStoreAddress = GeneratedColumn<bool>(
+    'is_store_address',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_store_address" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    recipientName,
+    phoneNumber,
+    province,
+    city,
+    district,
+    postalCode,
+    streetAddress,
+    detailAddress,
+    isMainAddress,
+    isStoreAddress,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'addresses';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AddressesData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('recipient_name')) {
+      context.handle(
+        _recipientNameMeta,
+        recipientName.isAcceptableOrUnknown(
+          data['recipient_name']!,
+          _recipientNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recipientNameMeta);
+    }
+    if (data.containsKey('phone_number')) {
+      context.handle(
+        _phoneNumberMeta,
+        phoneNumber.isAcceptableOrUnknown(
+          data['phone_number']!,
+          _phoneNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_phoneNumberMeta);
+    }
+    if (data.containsKey('province')) {
+      context.handle(
+        _provinceMeta,
+        province.isAcceptableOrUnknown(data['province']!, _provinceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_provinceMeta);
+    }
+    if (data.containsKey('city')) {
+      context.handle(
+        _cityMeta,
+        city.isAcceptableOrUnknown(data['city']!, _cityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cityMeta);
+    }
+    if (data.containsKey('district')) {
+      context.handle(
+        _districtMeta,
+        district.isAcceptableOrUnknown(data['district']!, _districtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_districtMeta);
+    }
+    if (data.containsKey('postal_code')) {
+      context.handle(
+        _postalCodeMeta,
+        postalCode.isAcceptableOrUnknown(data['postal_code']!, _postalCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_postalCodeMeta);
+    }
+    if (data.containsKey('street_address')) {
+      context.handle(
+        _streetAddressMeta,
+        streetAddress.isAcceptableOrUnknown(
+          data['street_address']!,
+          _streetAddressMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_streetAddressMeta);
+    }
+    if (data.containsKey('detail_address')) {
+      context.handle(
+        _detailAddressMeta,
+        detailAddress.isAcceptableOrUnknown(
+          data['detail_address']!,
+          _detailAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_main_address')) {
+      context.handle(
+        _isMainAddressMeta,
+        isMainAddress.isAcceptableOrUnknown(
+          data['is_main_address']!,
+          _isMainAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_store_address')) {
+      context.handle(
+        _isStoreAddressMeta,
+        isStoreAddress.isAcceptableOrUnknown(
+          data['is_store_address']!,
+          _isStoreAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AddressesData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AddressesData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}user_id'],
+      )!,
+      recipientName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recipient_name'],
+      )!,
+      phoneNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone_number'],
+      )!,
+      province: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}province'],
+      )!,
+      city: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}city'],
+      )!,
+      district: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}district'],
+      )!,
+      postalCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}postal_code'],
+      )!,
+      streetAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}street_address'],
+      )!,
+      detailAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}detail_address'],
+      ),
+      isMainAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_main_address'],
+      )!,
+      isStoreAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_store_address'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AddressesTable createAlias(String alias) {
+    return $AddressesTable(attachedDatabase, alias);
+  }
+}
+
+class AddressesData extends DataClass implements Insertable<AddressesData> {
+  final int id;
+  final int userId;
+  final String recipientName;
+  final String phoneNumber;
+  final String province;
+  final String city;
+  final String district;
+  final String postalCode;
+  final String streetAddress;
+  final String? detailAddress;
+  final bool isMainAddress;
+  final bool isStoreAddress;
+  final DateTime createdAt;
+  const AddressesData({
+    required this.id,
+    required this.userId,
+    required this.recipientName,
+    required this.phoneNumber,
+    required this.province,
+    required this.city,
+    required this.district,
+    required this.postalCode,
+    required this.streetAddress,
+    this.detailAddress,
+    required this.isMainAddress,
+    required this.isStoreAddress,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['user_id'] = Variable<int>(userId);
+    map['recipient_name'] = Variable<String>(recipientName);
+    map['phone_number'] = Variable<String>(phoneNumber);
+    map['province'] = Variable<String>(province);
+    map['city'] = Variable<String>(city);
+    map['district'] = Variable<String>(district);
+    map['postal_code'] = Variable<String>(postalCode);
+    map['street_address'] = Variable<String>(streetAddress);
+    if (!nullToAbsent || detailAddress != null) {
+      map['detail_address'] = Variable<String>(detailAddress);
+    }
+    map['is_main_address'] = Variable<bool>(isMainAddress);
+    map['is_store_address'] = Variable<bool>(isStoreAddress);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AddressesCompanion toCompanion(bool nullToAbsent) {
+    return AddressesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      recipientName: Value(recipientName),
+      phoneNumber: Value(phoneNumber),
+      province: Value(province),
+      city: Value(city),
+      district: Value(district),
+      postalCode: Value(postalCode),
+      streetAddress: Value(streetAddress),
+      detailAddress: detailAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(detailAddress),
+      isMainAddress: Value(isMainAddress),
+      isStoreAddress: Value(isStoreAddress),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AddressesData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AddressesData(
+      id: serializer.fromJson<int>(json['id']),
+      userId: serializer.fromJson<int>(json['userId']),
+      recipientName: serializer.fromJson<String>(json['recipientName']),
+      phoneNumber: serializer.fromJson<String>(json['phoneNumber']),
+      province: serializer.fromJson<String>(json['province']),
+      city: serializer.fromJson<String>(json['city']),
+      district: serializer.fromJson<String>(json['district']),
+      postalCode: serializer.fromJson<String>(json['postalCode']),
+      streetAddress: serializer.fromJson<String>(json['streetAddress']),
+      detailAddress: serializer.fromJson<String?>(json['detailAddress']),
+      isMainAddress: serializer.fromJson<bool>(json['isMainAddress']),
+      isStoreAddress: serializer.fromJson<bool>(json['isStoreAddress']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'userId': serializer.toJson<int>(userId),
+      'recipientName': serializer.toJson<String>(recipientName),
+      'phoneNumber': serializer.toJson<String>(phoneNumber),
+      'province': serializer.toJson<String>(province),
+      'city': serializer.toJson<String>(city),
+      'district': serializer.toJson<String>(district),
+      'postalCode': serializer.toJson<String>(postalCode),
+      'streetAddress': serializer.toJson<String>(streetAddress),
+      'detailAddress': serializer.toJson<String?>(detailAddress),
+      'isMainAddress': serializer.toJson<bool>(isMainAddress),
+      'isStoreAddress': serializer.toJson<bool>(isStoreAddress),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AddressesData copyWith({
+    int? id,
+    int? userId,
+    String? recipientName,
+    String? phoneNumber,
+    String? province,
+    String? city,
+    String? district,
+    String? postalCode,
+    String? streetAddress,
+    Value<String?> detailAddress = const Value.absent(),
+    bool? isMainAddress,
+    bool? isStoreAddress,
+    DateTime? createdAt,
+  }) => AddressesData(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    recipientName: recipientName ?? this.recipientName,
+    phoneNumber: phoneNumber ?? this.phoneNumber,
+    province: province ?? this.province,
+    city: city ?? this.city,
+    district: district ?? this.district,
+    postalCode: postalCode ?? this.postalCode,
+    streetAddress: streetAddress ?? this.streetAddress,
+    detailAddress: detailAddress.present
+        ? detailAddress.value
+        : this.detailAddress,
+    isMainAddress: isMainAddress ?? this.isMainAddress,
+    isStoreAddress: isStoreAddress ?? this.isStoreAddress,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AddressesData copyWithCompanion(AddressesCompanion data) {
+    return AddressesData(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      recipientName: data.recipientName.present
+          ? data.recipientName.value
+          : this.recipientName,
+      phoneNumber: data.phoneNumber.present
+          ? data.phoneNumber.value
+          : this.phoneNumber,
+      province: data.province.present ? data.province.value : this.province,
+      city: data.city.present ? data.city.value : this.city,
+      district: data.district.present ? data.district.value : this.district,
+      postalCode: data.postalCode.present
+          ? data.postalCode.value
+          : this.postalCode,
+      streetAddress: data.streetAddress.present
+          ? data.streetAddress.value
+          : this.streetAddress,
+      detailAddress: data.detailAddress.present
+          ? data.detailAddress.value
+          : this.detailAddress,
+      isMainAddress: data.isMainAddress.present
+          ? data.isMainAddress.value
+          : this.isMainAddress,
+      isStoreAddress: data.isStoreAddress.present
+          ? data.isStoreAddress.value
+          : this.isStoreAddress,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AddressesData(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('recipientName: $recipientName, ')
+          ..write('phoneNumber: $phoneNumber, ')
+          ..write('province: $province, ')
+          ..write('city: $city, ')
+          ..write('district: $district, ')
+          ..write('postalCode: $postalCode, ')
+          ..write('streetAddress: $streetAddress, ')
+          ..write('detailAddress: $detailAddress, ')
+          ..write('isMainAddress: $isMainAddress, ')
+          ..write('isStoreAddress: $isStoreAddress, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    recipientName,
+    phoneNumber,
+    province,
+    city,
+    district,
+    postalCode,
+    streetAddress,
+    detailAddress,
+    isMainAddress,
+    isStoreAddress,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AddressesData &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.recipientName == this.recipientName &&
+          other.phoneNumber == this.phoneNumber &&
+          other.province == this.province &&
+          other.city == this.city &&
+          other.district == this.district &&
+          other.postalCode == this.postalCode &&
+          other.streetAddress == this.streetAddress &&
+          other.detailAddress == this.detailAddress &&
+          other.isMainAddress == this.isMainAddress &&
+          other.isStoreAddress == this.isStoreAddress &&
+          other.createdAt == this.createdAt);
+}
+
+class AddressesCompanion extends UpdateCompanion<AddressesData> {
+  final Value<int> id;
+  final Value<int> userId;
+  final Value<String> recipientName;
+  final Value<String> phoneNumber;
+  final Value<String> province;
+  final Value<String> city;
+  final Value<String> district;
+  final Value<String> postalCode;
+  final Value<String> streetAddress;
+  final Value<String?> detailAddress;
+  final Value<bool> isMainAddress;
+  final Value<bool> isStoreAddress;
+  final Value<DateTime> createdAt;
+  const AddressesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.recipientName = const Value.absent(),
+    this.phoneNumber = const Value.absent(),
+    this.province = const Value.absent(),
+    this.city = const Value.absent(),
+    this.district = const Value.absent(),
+    this.postalCode = const Value.absent(),
+    this.streetAddress = const Value.absent(),
+    this.detailAddress = const Value.absent(),
+    this.isMainAddress = const Value.absent(),
+    this.isStoreAddress = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  AddressesCompanion.insert({
+    this.id = const Value.absent(),
+    required int userId,
+    required String recipientName,
+    required String phoneNumber,
+    required String province,
+    required String city,
+    required String district,
+    required String postalCode,
+    required String streetAddress,
+    this.detailAddress = const Value.absent(),
+    this.isMainAddress = const Value.absent(),
+    this.isStoreAddress = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : userId = Value(userId),
+       recipientName = Value(recipientName),
+       phoneNumber = Value(phoneNumber),
+       province = Value(province),
+       city = Value(city),
+       district = Value(district),
+       postalCode = Value(postalCode),
+       streetAddress = Value(streetAddress);
+  static Insertable<AddressesData> custom({
+    Expression<int>? id,
+    Expression<int>? userId,
+    Expression<String>? recipientName,
+    Expression<String>? phoneNumber,
+    Expression<String>? province,
+    Expression<String>? city,
+    Expression<String>? district,
+    Expression<String>? postalCode,
+    Expression<String>? streetAddress,
+    Expression<String>? detailAddress,
+    Expression<bool>? isMainAddress,
+    Expression<bool>? isStoreAddress,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (recipientName != null) 'recipient_name': recipientName,
+      if (phoneNumber != null) 'phone_number': phoneNumber,
+      if (province != null) 'province': province,
+      if (city != null) 'city': city,
+      if (district != null) 'district': district,
+      if (postalCode != null) 'postal_code': postalCode,
+      if (streetAddress != null) 'street_address': streetAddress,
+      if (detailAddress != null) 'detail_address': detailAddress,
+      if (isMainAddress != null) 'is_main_address': isMainAddress,
+      if (isStoreAddress != null) 'is_store_address': isStoreAddress,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  AddressesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? userId,
+    Value<String>? recipientName,
+    Value<String>? phoneNumber,
+    Value<String>? province,
+    Value<String>? city,
+    Value<String>? district,
+    Value<String>? postalCode,
+    Value<String>? streetAddress,
+    Value<String?>? detailAddress,
+    Value<bool>? isMainAddress,
+    Value<bool>? isStoreAddress,
+    Value<DateTime>? createdAt,
+  }) {
+    return AddressesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      recipientName: recipientName ?? this.recipientName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      province: province ?? this.province,
+      city: city ?? this.city,
+      district: district ?? this.district,
+      postalCode: postalCode ?? this.postalCode,
+      streetAddress: streetAddress ?? this.streetAddress,
+      detailAddress: detailAddress ?? this.detailAddress,
+      isMainAddress: isMainAddress ?? this.isMainAddress,
+      isStoreAddress: isStoreAddress ?? this.isStoreAddress,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<int>(userId.value);
+    }
+    if (recipientName.present) {
+      map['recipient_name'] = Variable<String>(recipientName.value);
+    }
+    if (phoneNumber.present) {
+      map['phone_number'] = Variable<String>(phoneNumber.value);
+    }
+    if (province.present) {
+      map['province'] = Variable<String>(province.value);
+    }
+    if (city.present) {
+      map['city'] = Variable<String>(city.value);
+    }
+    if (district.present) {
+      map['district'] = Variable<String>(district.value);
+    }
+    if (postalCode.present) {
+      map['postal_code'] = Variable<String>(postalCode.value);
+    }
+    if (streetAddress.present) {
+      map['street_address'] = Variable<String>(streetAddress.value);
+    }
+    if (detailAddress.present) {
+      map['detail_address'] = Variable<String>(detailAddress.value);
+    }
+    if (isMainAddress.present) {
+      map['is_main_address'] = Variable<bool>(isMainAddress.value);
+    }
+    if (isStoreAddress.present) {
+      map['is_store_address'] = Variable<bool>(isStoreAddress.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AddressesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('recipientName: $recipientName, ')
+          ..write('phoneNumber: $phoneNumber, ')
+          ..write('province: $province, ')
+          ..write('city: $city, ')
+          ..write('district: $district, ')
+          ..write('postalCode: $postalCode, ')
+          ..write('streetAddress: $streetAddress, ')
+          ..write('detailAddress: $detailAddress, ')
+          ..write('isMainAddress: $isMainAddress, ')
+          ..write('isStoreAddress: $isStoreAddress, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2159,11 +2959,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ProductsTable products = $ProductsTable(this);
   late final $CartItemsTable cartItems = $CartItemsTable(this);
   late final $WishlistsTable wishlists = $WishlistsTable(this);
+  late final $AddressesTable addresses = $AddressesTable(this);
   late final UserDao userDao = UserDao(this as AppDatabase);
   late final StoreDao storeDao = StoreDao(this as AppDatabase);
   late final ProductDao productDao = ProductDao(this as AppDatabase);
   late final CartDao cartDao = CartDao(this as AppDatabase);
   late final WishlistDao wishlistDao = WishlistDao(this as AppDatabase);
+  late final AddressDao addressDao = AddressDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2174,6 +2976,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     products,
     cartItems,
     wishlists,
+    addresses,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2218,6 +3021,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('wishlists', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'users',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('addresses', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2297,6 +3107,24 @@ final class $$UsersTableReferences
     ).filter((f) => f.userId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_wishlistsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AddressesTable, List<AddressesData>>
+  _addressesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.addresses,
+    aliasName: $_aliasNameGenerator(db.users.id, db.addresses.userId),
+  );
+
+  $$AddressesTableProcessedTableManager get addressesRefs {
+    final manager = $$AddressesTableTableManager(
+      $_db,
+      $_db.addresses,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_addressesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2412,6 +3240,31 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
           }) => $$WishlistsTableFilterComposer(
             $db: $db,
             $table: $db.wishlists,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> addressesRefs(
+    Expression<bool> Function($$AddressesTableFilterComposer f) f,
+  ) {
+    final $$AddressesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.addresses,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AddressesTableFilterComposer(
+            $db: $db,
+            $table: $db.addresses,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2573,6 +3426,31 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> addressesRefs<T extends Object>(
+    Expression<T> Function($$AddressesTableAnnotationComposer a) f,
+  ) {
+    final $$AddressesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.addresses,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AddressesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.addresses,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -2592,6 +3470,7 @@ class $$UsersTableTableManager
             bool storesRefs,
             bool cartItemsRefs,
             bool wishlistsRefs,
+            bool addressesRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -2652,6 +3531,7 @@ class $$UsersTableTableManager
                 storesRefs = false,
                 cartItemsRefs = false,
                 wishlistsRefs = false,
+                addressesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -2659,6 +3539,7 @@ class $$UsersTableTableManager
                     if (storesRefs) db.stores,
                     if (cartItemsRefs) db.cartItems,
                     if (wishlistsRefs) db.wishlists,
+                    if (addressesRefs) db.addresses,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -2710,6 +3591,27 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (addressesRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          AddressesData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._addressesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).addressesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -2734,6 +3636,7 @@ typedef $$UsersTableProcessedTableManager =
         bool storesRefs,
         bool cartItemsRefs,
         bool wishlistsRefs,
+        bool addressesRefs,
       })
     >;
 typedef $$StoresTableCreateCompanionBuilder =
@@ -4533,6 +5436,484 @@ typedef $$WishlistsTableProcessedTableManager =
       Wishlist,
       PrefetchHooks Function({bool userId, bool productId})
     >;
+typedef $$AddressesTableCreateCompanionBuilder =
+    AddressesCompanion Function({
+      Value<int> id,
+      required int userId,
+      required String recipientName,
+      required String phoneNumber,
+      required String province,
+      required String city,
+      required String district,
+      required String postalCode,
+      required String streetAddress,
+      Value<String?> detailAddress,
+      Value<bool> isMainAddress,
+      Value<bool> isStoreAddress,
+      Value<DateTime> createdAt,
+    });
+typedef $$AddressesTableUpdateCompanionBuilder =
+    AddressesCompanion Function({
+      Value<int> id,
+      Value<int> userId,
+      Value<String> recipientName,
+      Value<String> phoneNumber,
+      Value<String> province,
+      Value<String> city,
+      Value<String> district,
+      Value<String> postalCode,
+      Value<String> streetAddress,
+      Value<String?> detailAddress,
+      Value<bool> isMainAddress,
+      Value<bool> isStoreAddress,
+      Value<DateTime> createdAt,
+    });
+
+final class $$AddressesTableReferences
+    extends BaseReferences<_$AppDatabase, $AddressesTable, AddressesData> {
+  $$AddressesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) => db.users.createAlias(
+    $_aliasNameGenerator(db.addresses.userId, db.users.id),
+  );
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<int>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AddressesTableFilterComposer
+    extends Composer<_$AppDatabase, $AddressesTable> {
+  $$AddressesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recipientName => $composableBuilder(
+    column: $table.recipientName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phoneNumber => $composableBuilder(
+    column: $table.phoneNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get province => $composableBuilder(
+    column: $table.province,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get city => $composableBuilder(
+    column: $table.city,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get district => $composableBuilder(
+    column: $table.district,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get postalCode => $composableBuilder(
+    column: $table.postalCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get streetAddress => $composableBuilder(
+    column: $table.streetAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get detailAddress => $composableBuilder(
+    column: $table.detailAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isMainAddress => $composableBuilder(
+    column: $table.isMainAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isStoreAddress => $composableBuilder(
+    column: $table.isStoreAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AddressesTableOrderingComposer
+    extends Composer<_$AppDatabase, $AddressesTable> {
+  $$AddressesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recipientName => $composableBuilder(
+    column: $table.recipientName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phoneNumber => $composableBuilder(
+    column: $table.phoneNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get province => $composableBuilder(
+    column: $table.province,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get city => $composableBuilder(
+    column: $table.city,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get district => $composableBuilder(
+    column: $table.district,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get postalCode => $composableBuilder(
+    column: $table.postalCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get streetAddress => $composableBuilder(
+    column: $table.streetAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get detailAddress => $composableBuilder(
+    column: $table.detailAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isMainAddress => $composableBuilder(
+    column: $table.isMainAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isStoreAddress => $composableBuilder(
+    column: $table.isStoreAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AddressesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AddressesTable> {
+  $$AddressesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get recipientName => $composableBuilder(
+    column: $table.recipientName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phoneNumber => $composableBuilder(
+    column: $table.phoneNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get province =>
+      $composableBuilder(column: $table.province, builder: (column) => column);
+
+  GeneratedColumn<String> get city =>
+      $composableBuilder(column: $table.city, builder: (column) => column);
+
+  GeneratedColumn<String> get district =>
+      $composableBuilder(column: $table.district, builder: (column) => column);
+
+  GeneratedColumn<String> get postalCode => $composableBuilder(
+    column: $table.postalCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get streetAddress => $composableBuilder(
+    column: $table.streetAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get detailAddress => $composableBuilder(
+    column: $table.detailAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isMainAddress => $composableBuilder(
+    column: $table.isMainAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isStoreAddress => $composableBuilder(
+    column: $table.isStoreAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AddressesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AddressesTable,
+          AddressesData,
+          $$AddressesTableFilterComposer,
+          $$AddressesTableOrderingComposer,
+          $$AddressesTableAnnotationComposer,
+          $$AddressesTableCreateCompanionBuilder,
+          $$AddressesTableUpdateCompanionBuilder,
+          (AddressesData, $$AddressesTableReferences),
+          AddressesData,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$AddressesTableTableManager(_$AppDatabase db, $AddressesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AddressesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AddressesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AddressesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> userId = const Value.absent(),
+                Value<String> recipientName = const Value.absent(),
+                Value<String> phoneNumber = const Value.absent(),
+                Value<String> province = const Value.absent(),
+                Value<String> city = const Value.absent(),
+                Value<String> district = const Value.absent(),
+                Value<String> postalCode = const Value.absent(),
+                Value<String> streetAddress = const Value.absent(),
+                Value<String?> detailAddress = const Value.absent(),
+                Value<bool> isMainAddress = const Value.absent(),
+                Value<bool> isStoreAddress = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AddressesCompanion(
+                id: id,
+                userId: userId,
+                recipientName: recipientName,
+                phoneNumber: phoneNumber,
+                province: province,
+                city: city,
+                district: district,
+                postalCode: postalCode,
+                streetAddress: streetAddress,
+                detailAddress: detailAddress,
+                isMainAddress: isMainAddress,
+                isStoreAddress: isStoreAddress,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int userId,
+                required String recipientName,
+                required String phoneNumber,
+                required String province,
+                required String city,
+                required String district,
+                required String postalCode,
+                required String streetAddress,
+                Value<String?> detailAddress = const Value.absent(),
+                Value<bool> isMainAddress = const Value.absent(),
+                Value<bool> isStoreAddress = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AddressesCompanion.insert(
+                id: id,
+                userId: userId,
+                recipientName: recipientName,
+                phoneNumber: phoneNumber,
+                province: province,
+                city: city,
+                district: district,
+                postalCode: postalCode,
+                streetAddress: streetAddress,
+                detailAddress: detailAddress,
+                isMainAddress: isMainAddress,
+                isStoreAddress: isStoreAddress,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AddressesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$AddressesTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$AddressesTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AddressesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AddressesTable,
+      AddressesData,
+      $$AddressesTableFilterComposer,
+      $$AddressesTableOrderingComposer,
+      $$AddressesTableAnnotationComposer,
+      $$AddressesTableCreateCompanionBuilder,
+      $$AddressesTableUpdateCompanionBuilder,
+      (AddressesData, $$AddressesTableReferences),
+      AddressesData,
+      PrefetchHooks Function({bool userId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4547,6 +5928,8 @@ class $AppDatabaseManager {
       $$CartItemsTableTableManager(_db, _db.cartItems);
   $$WishlistsTableTableManager get wishlists =>
       $$WishlistsTableTableManager(_db, _db.wishlists);
+  $$AddressesTableTableManager get addresses =>
+      $$AddressesTableTableManager(_db, _db.addresses);
 }
 
 mixin _$UserDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -4572,4 +5955,8 @@ mixin _$WishlistDaoMixin on DatabaseAccessor<AppDatabase> {
   $StoresTable get stores => attachedDatabase.stores;
   $ProductsTable get products => attachedDatabase.products;
   $WishlistsTable get wishlists => attachedDatabase.wishlists;
+}
+mixin _$AddressDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+  $AddressesTable get addresses => attachedDatabase.addresses;
 }

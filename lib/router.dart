@@ -11,6 +11,8 @@ import 'pages/add_edit_product_page.dart';
 import 'pages/store_catalog_page.dart';
 import 'pages/edit_profile_page.dart';
 import 'pages/wishlist_page.dart';
+import 'pages/addresses_page.dart';
+import 'pages/add_edit_address_page.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -88,6 +90,27 @@ final GoRouter router = GoRouter(
       path: '/wishlist',
       name: 'wishlist',
       builder: (context, state) => const WishlistPage(),
+    ),
+    
+    GoRoute(
+      path: '/addresses',
+      name: 'addresses',
+      builder: (context, state) => const AddressesPage(),
+    ),
+    
+    GoRoute(
+      path: '/add-address',
+      name: 'add_address',
+      builder: (context, state) => const AddEditAddressPage(),
+    ),
+    
+    GoRoute(
+      path: '/edit-address/:id',
+      name: 'edit_address',
+      builder: (context, state) {
+        final addressId = int.parse(state.pathParameters['id']!);
+        return AddEditAddressPage(addressId: addressId);
+      },
     ),
     
     GoRoute(

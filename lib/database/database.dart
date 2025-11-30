@@ -9,6 +9,7 @@ part 'store_dao.dart';
 part 'product_dao.dart';
 part 'cart_dao.dart';
 part 'wishlist_dao.dart';
+part 'address_dao.dart';
 
 // Users Table
 class Users extends Table {
@@ -72,6 +73,23 @@ class Wishlists extends Table {
   ];
 }
 
+// Addresses Table
+class Addresses extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get userId => integer().references(Users, #id, onDelete: KeyAction.cascade)();
+  TextColumn get recipientName => text().withLength(min: 1, max: 255)();
+  TextColumn get phoneNumber => text().withLength(min: 6, max: 20)();
+  TextColumn get province => text().withLength(min: 1, max: 100)();
+  TextColumn get city => text().withLength(min: 1, max: 100)();
+  TextColumn get district => text().withLength(min: 1, max: 100)();
+  TextColumn get postalCode => text().withLength(min: 1, max: 10)();
+  TextColumn get streetAddress => text()(); // Nama Jalan, Gedung, No. Rumah
+  TextColumn get detailAddress => text().nullable()(); // Detail Lainnya (Blok/Unit No., Patokan)
+  BoolColumn get isMainAddress => boolean().withDefault(const Constant(false))();
+  BoolColumn get isStoreAddress => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 // Helper class to return cart item with product details
 class CartItemWithProduct {
   final CartItem cartItem;
@@ -84,14 +102,14 @@ class CartItemWithProduct {
 }
 
 @DriftDatabase(
-  tables: [Users, Stores, Products, CartItems, Wishlists],
-  daos: [UserDao, StoreDao, ProductDao, CartDao, WishlistDao],
+  tables: [Users, Stores, Products, CartItems, Wishlists, Addresses],
+  daos: [UserDao, StoreDao, ProductDao, CartDao, WishlistDao, AddressDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4; // Updated to include Wishlists table
+  int get schemaVersion => 5; // Updated to include Addresses table
 
   // Create singleton instance
   static AppDatabase? _instance;
@@ -126,6 +144,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 4) {
           // Add Wishlists table
           await m.createTable(wishlists);
+        }
+        if (from < 5) {
+          // Add Addresses table
+          await m.createTable(addresses);
         }
       },
     );

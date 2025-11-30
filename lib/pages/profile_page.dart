@@ -182,7 +182,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 }
               }),
-              _MenuItem(Icons.location_on, 'Addresses', () {}),
+              _MenuItem(Icons.location_on, 'Addresses', () {
+                if (isLoggedIn) {
+                  context.push('/addresses');
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Silakan login terlebih dahulu')),
+                  );
+                }
+              }),
               _MenuItem(Icons.payment_outlined, 'Payment Methods', () {}),
             ]),
             

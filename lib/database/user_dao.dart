@@ -149,6 +149,40 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
     ));
   }
 
+  // Change user password
+  Future<bool> changePassword({
+    required int userId,
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    // Validate new password length
+    if (newPassword.length < 8) {
+      throw Exception('Password baru minimal 8 karakter');
+    }
+
+    // Get current user
+    final user = await getUserById(userId);
+    if (user == null) {
+      throw Exception('User tidak ditemukan');
+    }
+
+    // Verify old password
+    final hashedOldPassword = db.hashPassword(oldPassword);
+    if (user.password != hashedOldPassword) {
+      throw Exception('Password lama tidak sesuai');
+    }
+
+    // Hash new password and update
+    final hashedNewPassword = db.hashPassword(newPassword);
+    
+    final result = await (update(users)..where((tbl) => tbl.id.equals(userId)))
+        .write(UsersCompanion(
+      password: Value(hashedNewPassword),
+    ));
+
+    return result > 0;
+  }
+
   // Delete user
   Future<int> deleteUser(int userId) {
     return (delete(users)..where((tbl) => tbl.id.equals(userId))).go();

@@ -323,10 +323,299 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                 ),
               ),
+
+              const SizedBox(height: 32),
+              
+              // Divider
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Keamanan',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Change Password Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showChangePasswordDialog(context),
+                  icon: const Icon(Icons.lock_outline),
+                  label: const Text(
+                    'Change Password',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                    side: BorderSide(color: colorScheme.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final oldPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool isLoading = false;
+    bool obscureOld = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Change Password',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Old Password
+                      TextFormField(
+                        controller: oldPasswordController,
+                        obscureText: obscureOld,
+                        decoration: InputDecoration(
+                          labelText: 'Old Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              obscureOld ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setDialogState(() => obscureOld = !obscureOld);
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Old password tidak boleh kosong';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // New Password
+                      TextFormField(
+                        controller: newPasswordController,
+                        obscureText: obscureNew,
+                        decoration: InputDecoration(
+                          labelText: 'New Password',
+                          prefixIcon: const Icon(Icons.lock_reset),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              obscureNew ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setDialogState(() => obscureNew = !obscureNew);
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'New password tidak boleh kosong';
+                          }
+                          if (value.length < 8) {
+                            return 'Password minimal 8 karakter';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Confirm Password
+                      TextFormField(
+                        controller: confirmPasswordController,
+                        obscureText: obscureConfirm,
+                        decoration: InputDecoration(
+                          labelText: 'Confirmation Password',
+                          prefixIcon: const Icon(Icons.lock_clock_outlined),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setDialogState(() => obscureConfirm = !obscureConfirm);
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Confirmation password tidak boleh kosong';
+                          }
+                          if (value != newPasswordController.text) {
+                            return 'Password tidak sama';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading ? null : () async {
+                    if (formKey.currentState!.validate() && _userId != null) {
+                      setDialogState(() => isLoading = true);
+
+                      try {
+                        await _database.userDao.changePassword(
+                          userId: _userId!,
+                          oldPassword: oldPasswordController.text,
+                          newPassword: newPasswordController.text,
+                        );
+
+                        if (mounted) {
+                          Navigator.of(dialogContext).pop();
+                          
+                          // Show success notification
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: const [
+                                  Icon(Icons.check_circle, color: Colors.white),
+                                  SizedBox(width: 12),
+                                  Text('Password has been changed'),
+                                ],
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isLoading = false);
+                        
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.error_outline, color: Colors.white),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      e.toString().replaceAll('Exception: ', ''),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: Colors.red,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
