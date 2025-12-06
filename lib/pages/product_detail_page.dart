@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database.dart';
+import '../widgets/buy_now_bottom_sheet.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -125,6 +126,42 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         );
       }
     }
+  }
+
+  void _showBuyNowBottomSheet(BuildContext context) {
+    if (_currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please login first to buy items'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      context.go('/login');
+      return;
+    }
+
+    if (product == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BuyNowBottomSheet(
+        product: product!,
+        initialQuantity: quantity,
+        onProceed: (selectedQuantity) {
+          context.push(
+            '/checkout',
+            extra: {
+              'product': product,
+              'quantity': selectedQuantity,
+              'store': store,
+            },
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -521,12 +558,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Expanded(
                         child: FilledButton.icon(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Buying $quantity ${product!.name}...'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            _showBuyNowBottomSheet(context);
                           },
                           icon: const Icon(Icons.shopping_bag, size: 20),
                           label: const Text('Buy Now'),

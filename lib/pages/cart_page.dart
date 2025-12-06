@@ -481,14 +481,23 @@ class _CartPageState extends State<CartPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement checkout functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Checkout feature coming soon!'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
+                onPressed: () async {
+                  // Navigate to checkout with first cart item
+                  if (_cartItems.isNotEmpty) {
+                    final firstItem = _cartItems.first;
+                    final store = await _database.storeDao.getStoreById(firstItem.product.storeId);
+                    
+                    if (mounted) {
+                      context.push(
+                        '/checkout',
+                        extra: {
+                          'product': firstItem.product,
+                          'quantity': firstItem.cartItem.quantity,
+                          'store': store,
+                        },
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,

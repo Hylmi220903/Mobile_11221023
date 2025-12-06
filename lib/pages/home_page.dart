@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/product_card.dart';
 import '../widgets/main_layout.dart';
+import '../widgets/buy_now_bottom_sheet.dart';
 import '../database/database.dart';
 import '../database/seed_data.dart';
 
@@ -125,12 +126,16 @@ class _HomePageState extends State<HomePage> {
     return products;
   }
 
-  Future<void> _addToCart(Product product) async {
+  Future<Store?> _getStoreForProduct(Product product) async {
+    return await _database.storeDao.getStoreById(product.storeId);
+  }
+
+  void _showBuyNowBottomSheet(Product product) async {
     if (_currentUserId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please login first to add items to cart'),
+            content: Text('Please login first to buy items'),
             backgroundColor: Colors.orange,
             behavior: SnackBarBehavior.floating,
           ),
@@ -140,38 +145,29 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    try {
-      await _database.cartDao.addToCart(
-        userId: _currentUserId!,
-        productId: product.id,
-        quantity: 1,
-      );
+    final store = await _getStoreForProduct(product);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Added ${product.name} to cart'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            action: SnackBarAction(
-              label: 'View Cart',
-              textColor: Colors.white,
-              onPressed: () => context.go('/cart'),
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BuyNowBottomSheet(
+        product: product,
+        initialQuantity: 1,
+        onProceed: (selectedQuantity) {
+          context.push(
+            '/checkout',
+            extra: {
+              'product': product,
+              'quantity': selectedQuantity,
+              'store': store,
+            },
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _handleLogout() async {
@@ -331,7 +327,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 showSearch(
                   context: context,
-                  delegate: ProductSearchDelegate(_allProducts, _addToCart),
+                  delegate: ProductSearchDelegate(_allProducts, _showBuyNowBottomSheet),
                 );
               },
               tooltip: 'Search',
@@ -515,7 +511,7 @@ class _HomePageState extends State<HomePage> {
                       return ProductCard(
                         product: product,
                         onTap: () => context.go('/product/${product.id}'),
-                        onBuyNow: () => _addToCart(product),
+                        onBuyNow: () => _showBuyNowBottomSheet(product),
                       );
                     },
                   ),
@@ -530,9 +526,9 @@ class _HomePageState extends State<HomePage> {
 // Search Delegate
 class ProductSearchDelegate extends SearchDelegate<Product?> {
   final List<Product> products;
-  final Function(Product) onAddToCart;
+  final Function(Product) onBuyNow;
 
-  ProductSearchDelegate(this.products, this.onAddToCart);
+  ProductSearchDelegate(this.products, this.onBuyNow);
 
   @override
   String get searchFieldLabel => 'Search products...';
@@ -649,7 +645,8 @@ class ProductSearchDelegate extends SearchDelegate<Product?> {
             context.go('/product/${product.id}');
           },
           onBuyNow: () {
-            onAddToCart(product);
+            close(context, null);
+            onBuyNow(product);
           },
         );
       },

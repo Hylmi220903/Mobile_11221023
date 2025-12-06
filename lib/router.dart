@@ -13,6 +13,8 @@ import 'pages/edit_profile_page.dart';
 import 'pages/wishlist_page.dart';
 import 'pages/addresses_page.dart';
 import 'pages/add_edit_address_page.dart';
+import 'pages/checkout_page.dart';
+import 'database/database.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -110,6 +112,25 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final addressId = int.parse(state.pathParameters['id']!);
         return AddEditAddressPage(addressId: addressId);
+      },
+    ),
+    
+    GoRoute(
+      path: '/checkout',
+      name: 'checkout',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        if (extra == null) {
+          return const HomePage();
+        }
+        final product = extra['product'] as Product;
+        final quantity = extra['quantity'] as int;
+        final store = extra['store'] as Store?;
+        return CheckoutPage(
+          product: product,
+          quantity: quantity,
+          store: store,
+        );
       },
     ),
     

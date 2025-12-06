@@ -18,3 +18,4 @@ void main() {
     expect(product.soldCount, 0); // default value
   });
 }
+  

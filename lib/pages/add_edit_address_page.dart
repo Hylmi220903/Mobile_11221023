@@ -252,11 +252,10 @@ class _AddEditAddressPageState extends State<AddEditAddressPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Province, City, District, Postal Code (Clickable style but text input)
+                    // Province, City, District, Postal Code (text input only)
                     _buildTextField(
                       controller: _provinceController,
                       hint: 'Provinsi',
-                      suffixIcon: const Icon(Icons.chevron_right, color: Colors.grey),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Provinsi tidak boleh kosong';
@@ -269,7 +268,6 @@ class _AddEditAddressPageState extends State<AddEditAddressPage> {
                     _buildTextField(
                       controller: _cityController,
                       hint: 'Kota/Kabupaten',
-                      suffixIcon: const Icon(Icons.chevron_right, color: Colors.grey),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Kota tidak boleh kosong';
@@ -282,7 +280,6 @@ class _AddEditAddressPageState extends State<AddEditAddressPage> {
                     _buildTextField(
                       controller: _districtController,
                       hint: 'Kecamatan',
-                      suffixIcon: const Icon(Icons.chevron_right, color: Colors.grey),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Kecamatan tidak boleh kosong';
