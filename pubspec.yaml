@@ -37,6 +37,7 @@ dependencies:
   
   # Navigation
   go_router: ^14.2.7
+  qr_flutter: ^4.1.0
   
   # Database
   drift: ^2.16.0

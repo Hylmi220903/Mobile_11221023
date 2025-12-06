@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import '../database/database.dart';
 
 // Function to seed initial data: Admin user, Apple Store, and products
@@ -161,6 +162,85 @@ Future<void> seedInitialData(AppDatabase database) async {
     }
     print('✓ Successfully seeded $productCount products');
 
+    // 4. Seed sample orders
+    print('Seeding sample orders...');
+    
+    // Get test user
+    final testUser2 = await database.userDao.getUserByEmail('tes@gmail.com');
+    final testUserId = testUser2?.id;
+    
+    if (testUserId != null) {
+      // Get some products for orders
+      final allProducts = await database.productDao.getAllProducts();
+      
+      if (allProducts.length >= 3) {
+        // Create orders for the test user (buyer) and admin (seller)
+        
+        // Order 1: Payment status (30 min deadline)
+        await database.orderDao.createOrder(
+          OrdersCompanion.insert(
+            buyerId: testUserId,
+            sellerId: adminUserId,
+            productId: allProducts[0].id,
+            quantity: 1,
+            priceAtPurchase: allProducts[0].price,
+            shippingType: 'Reguler - JNE',
+            status: 'payment',
+            paymentDeadline: Value(DateTime.now().add(const Duration(minutes: 22))),
+          ),
+        );
+        
+        // Order 2: Packing status
+        await database.orderDao.createOrder(
+          OrdersCompanion.insert(
+            buyerId: testUserId,
+            sellerId: adminUserId,
+            productId: allProducts[1].id,
+            quantity: 1,
+            priceAtPurchase: allProducts[1].price,
+            shippingType: 'Instant - Gosend',
+            status: 'packing',
+            paidAt: Value(DateTime.now().subtract(const Duration(hours: 1))),
+          ),
+        );
+        
+        // Order 3: Delivery status
+        await database.orderDao.createOrder(
+          OrdersCompanion.insert(
+            buyerId: testUserId,
+            sellerId: adminUserId,
+            productId: allProducts[2].id,
+            quantity: 2,
+            priceAtPurchase: allProducts[2].price,
+            shippingType: 'Kargo - SiCepat',
+            status: 'delivery',
+            paidAt: Value(DateTime.now().subtract(const Duration(days: 1))),
+            deliveredAt: Value(DateTime.now().subtract(const Duration(hours: 12))),
+          ),
+        );
+        
+        // Order 4: Finished status
+        if (allProducts.length >= 4) {
+          await database.orderDao.createOrder(
+            OrdersCompanion.insert(
+              buyerId: testUserId,
+              sellerId: adminUserId,
+              productId: allProducts[3].id,
+              quantity: 1,
+              priceAtPurchase: allProducts[3].price,
+              shippingType: 'Reguler - JNE',
+              status: 'finished',
+              paidAt: Value(DateTime.now().subtract(const Duration(days: 5))),
+              deliveredAt: Value(DateTime.now().subtract(const Duration(days: 3))),
+              finishedAt: Value(DateTime.now().subtract(const Duration(days: 2))),
+            ),
+          );
+        }
+        
+        print('✓ Successfully seeded 4 sample orders');
+      }
+    }
+
     print('\n========================================');
     print('✅ Initial data seeding completed!');
     print('========================================');
@@ -168,6 +248,7 @@ Future<void> seedInitialData(AppDatabase database) async {
     print('Test Account: tes@gmail.com / tes12345');
     print('Store: Apple Store Official (ID: $appleStoreId)');
     print('Products: $productCount items added');
+    print('Orders: Sample orders added for testing');
     print('========================================\n');
 
   } catch (e) {

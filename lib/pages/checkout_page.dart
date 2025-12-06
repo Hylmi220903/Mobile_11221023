@@ -100,14 +100,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   String _formatPrice(double price) {
-    return 'Rp${price.toInt().toString().replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    )}';
+    return 'Rp${price.toInt().toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
   }
 
   double get _productTotal => (_product?.price ?? 0) * widget.quantity;
-  double get _deliveryFee => (_deliveryOptions[_selectedDelivery]?['price'] ?? 0).toDouble();
+  double get _deliveryFee =>
+      (_deliveryOptions[_selectedDelivery]?['price'] ?? 0).toDouble();
   double get _grandTotal => _productTotal + _deliveryFee;
 
   String _buildFullAddress(AddressesData address) {
@@ -155,14 +153,31 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
-    // TODO: Implement order creation and payment flow
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Pesanan berhasil dibuat! Total: ${_formatPrice(_grandTotal)}'),
-        backgroundColor: Colors.green,
-      ),
+    final now = DateTime.now();
+    final orderCode = 'ORD-${_userId ?? 'GUEST'}-${now.millisecondsSinceEpoch}';
+    final expiresAt = now.add(const Duration(minutes: 30));
+
+    // Generate QR payload based on order details to keep it unique per checkout
+    final qrContent = [
+      'QRIS-ITKBARKAS',
+      'order:$orderCode',
+      'product:${_product?.id ?? '-'}',
+      'qty:${widget.quantity}',
+      'amount:${_grandTotal.toStringAsFixed(0)}',
+      'ts:${now.toIso8601String()}',
+    ].join('|');
+
+    context.pushNamed(
+      'payment',
+      extra: {
+        'amount': _grandTotal,
+        'orderCode': orderCode,
+        'productName': _product?.name ?? 'Produk',
+        'quantity': widget.quantity,
+        'qrContent': qrContent,
+        'expiresAt': expiresAt,
+      },
     );
-    context.go('/');
   }
 
   @override
@@ -254,11 +269,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.location_on,
-                color: colorScheme.primary,
-                size: 20,
-              ),
+              Icon(Icons.location_on, color: colorScheme.primary, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: _selectedAddress != null
@@ -316,10 +327,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ],
                       ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey.shade400,
-              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400),
             ],
           ),
         ),
@@ -455,10 +463,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       child: Row(
         children: [
           const Expanded(
-            child: Text(
-              'Pesan untuk Penjual',
-              style: TextStyle(fontSize: 14),
-            ),
+            child: Text('Pesan untuk Penjual', style: TextStyle(fontSize: 14)),
           ),
           Expanded(
             flex: 2,
@@ -467,10 +472,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               textAlign: TextAlign.end,
               decoration: InputDecoration(
                 hintText: 'Tinggalkan pesan',
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 14,
-                ),
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
                 isDense: true,
@@ -478,11 +480,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               style: const TextStyle(fontSize: 14),
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: Colors.grey.shade400,
-            size: 20,
-          ),
+          Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
         ],
       ),
     );
@@ -500,17 +498,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
             children: [
               const Text(
                 'Opsi Pengiriman',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
               Text(
                 'Lihat Semua',
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: colorScheme.primary, fontSize: 13),
               ),
             ],
           ),
@@ -530,18 +522,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isSelected ? colorScheme.primary : Colors.grey.shade300,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : Colors.grey.shade300,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(8),
-                  color: isSelected ? colorScheme.primary.withValues(alpha: 0.05) : null,
+                  color: isSelected
+                      ? colorScheme.primary.withValues(alpha: 0.05)
+                      : null,
                 ),
                 child: Row(
                   children: [
                     Radio<String>(
                       value: key,
                       groupValue: _selectedDelivery,
-                      onChanged: (value) => setState(() => _selectedDelivery = value!),
+                      onChanged: (value) =>
+                          setState(() => _selectedDelivery = value!),
                       activeColor: colorScheme.primary,
                       visualDensity: VisualDensity.compact,
                     ),
@@ -609,10 +606,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         children: [
           const Text(
             'Metode Pembayaran',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
 
           const SizedBox(height: 12),
@@ -623,7 +617,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
             return InkWell(
               onTap: isAvailable
-                  ? () => setState(() => _selectedPayment = method['key'] as String)
+                  ? () => setState(
+                      () => _selectedPayment = method['key'] as String,
+                    )
                   : null,
               child: Container(
                 margin: const EdgeInsets.only(bottom: 8),
@@ -633,16 +629,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     color: isSelected
                         ? colorScheme.primary
                         : isAvailable
-                            ? Colors.grey.shade300
-                            : Colors.grey.shade200,
+                        ? Colors.grey.shade300
+                        : Colors.grey.shade200,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(8),
                   color: isSelected
                       ? colorScheme.primary.withValues(alpha: 0.05)
                       : !isAvailable
-                          ? Colors.grey.shade100
-                          : null,
+                      ? Colors.grey.shade100
+                      : null,
                 ),
                 child: Row(
                   children: [
@@ -666,7 +662,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     if (!isAvailable) ...[
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade300,
                           borderRadius: BorderRadius.circular(4),
@@ -699,10 +698,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         children: [
           const Text(
             'Ringkasan Pesanan',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
 
           const SizedBox(height: 12),
@@ -712,10 +708,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _formatPrice(_productTotal),
           ),
           const SizedBox(height: 8),
-          _buildSummaryRow(
-            'Biaya Pengiriman',
-            _formatPrice(_deliveryFee),
-          ),
+          _buildSummaryRow('Biaya Pengiriman', _formatPrice(_deliveryFee)),
 
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
@@ -733,7 +726,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, {bool isBold = false, Color? priceColor}) {
+  Widget _buildSummaryRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    Color? priceColor,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -779,10 +777,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 children: [
                   const Text(
                     'Total',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   Text(
                     _formatPrice(_grandTotal),
@@ -809,10 +804,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
                 child: const Text(
                   'Buat Pesanan',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -876,10 +868,7 @@ class _AddressSelectionSheet extends StatelessWidget {
               children: [
                 const Text(
                   'Pilih Alamat Pengiriman',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
@@ -909,7 +898,9 @@ class _AddressSelectionSheet extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isSelected ? colorScheme.primary.withValues(alpha: 0.05) : null,
+                      color: isSelected
+                          ? colorScheme.primary.withValues(alpha: 0.05)
+                          : null,
                       border: Border(
                         bottom: BorderSide(color: Colors.grey.shade200),
                       ),
@@ -943,7 +934,9 @@ class _AddressSelectionSheet extends StatelessWidget {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        border: Border.all(color: colorScheme.primary),
+                                        border: Border.all(
+                                          color: colorScheme.primary,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(

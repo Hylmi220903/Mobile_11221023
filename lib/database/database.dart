@@ -10,6 +10,7 @@ part 'product_dao.dart';
 part 'cart_dao.dart';
 part 'wishlist_dao.dart';
 part 'address_dao.dart';
+part 'order_dao.dart';
 
 // Users Table
 class Users extends Table {
@@ -90,6 +91,23 @@ class Addresses extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+// Orders Table
+class Orders extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get buyerId => integer().references(Users, #id, onDelete: KeyAction.cascade)();
+  IntColumn get sellerId => integer().references(Users, #id, onDelete: KeyAction.cascade)();
+  IntColumn get productId => integer().references(Products, #id, onDelete: KeyAction.cascade)();
+  IntColumn get quantity => integer()();
+  RealColumn get priceAtPurchase => real()(); // Price at the time of purchase
+  TextColumn get shippingType => text()(); // e.g., "Reguler - JNE", "Instant - Gosend"
+  TextColumn get status => text()(); // payment, packing, delivery, finished
+  DateTimeColumn get paymentDeadline => dateTime().nullable()(); // 30 minutes for payment
+  DateTimeColumn get orderedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get paidAt => dateTime().nullable()();
+  DateTimeColumn get deliveredAt => dateTime().nullable()();
+  DateTimeColumn get finishedAt => dateTime().nullable()();
+}
+
 // Helper class to return cart item with product details
 class CartItemWithProduct {
   final CartItem cartItem;
@@ -102,14 +120,14 @@ class CartItemWithProduct {
 }
 
 @DriftDatabase(
-  tables: [Users, Stores, Products, CartItems, Wishlists, Addresses],
-  daos: [UserDao, StoreDao, ProductDao, CartDao, WishlistDao, AddressDao],
+  tables: [Users, Stores, Products, CartItems, Wishlists, Addresses, Orders],
+  daos: [UserDao, StoreDao, ProductDao, CartDao, WishlistDao, AddressDao, OrderDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5; // Updated to include Addresses table
+  int get schemaVersion => 6; // Updated to include Orders table
 
   // Create singleton instance
   static AppDatabase? _instance;
@@ -148,6 +166,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 5) {
           // Add Addresses table
           await m.createTable(addresses);
+        }
+        if (from < 6) {
+          // Add Orders table
+          await m.createTable(orders);
         }
       },
     );
