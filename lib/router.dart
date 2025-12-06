@@ -15,6 +15,7 @@ import 'pages/addresses_page.dart';
 import 'pages/add_edit_address_page.dart';
 import 'pages/checkout_page.dart';
 import 'pages/payment_page.dart';
+import 'pages/order_detail_page.dart';
 import 'database/database.dart';
 
 final GoRouter router = GoRouter(
@@ -57,6 +58,15 @@ final GoRouter router = GoRouter(
       path: '/my-orders',
       name: 'my_orders',
       builder: (context, state) => const MyOrdersPage(),
+    ),
+
+    GoRoute(
+      path: '/order/:id',
+      name: 'order_detail',
+      builder: (context, state) {
+        final orderId = int.parse(state.pathParameters['id']!);
+        return OrderDetailPage(orderId: orderId);
+      },
     ),
 
     GoRoute(
