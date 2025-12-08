@@ -93,6 +93,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         return 'Dalam Pengiriman';
       case 'finished':
         return 'Selesai';
+      case 'cancelled':
+        return 'Pembayaran Dibatalkan';
       default:
         return status;
     }
@@ -108,6 +110,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         return Colors.blue;
       case 'finished':
         return Colors.green;
+      case 'cancelled':
+        return Colors.red;
       default:
         return Colors.grey;
     }
@@ -123,6 +127,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         return Icons.local_shipping_outlined;
       case 'finished':
         return Icons.check_circle_outline;
+      case 'cancelled':
+        return Icons.cancel_outlined;
       default:
         return Icons.info_outline;
     }
@@ -362,6 +368,42 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           ),
 
           const SizedBox(height: 16),
+
+          // Payment Button for unpaid orders
+          if (order.status == 'payment' && order.paymentDeadline != null) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    context.push('/payment', extra: {
+                      'amount': order.priceAtPurchase * order.quantity,
+                      'orderCode': 'ORD-${order.id}',
+                      'productName': '${product.name} ${product.model}',
+                      'quantity': order.quantity,
+                      'qrContent': 'ORDER_${order.id}_${buyerName}_${order.priceAtPurchase * order.quantity}',
+                      'expiresAt': order.paymentDeadline!,
+                    });
+                  },
+                  icon: const Icon(Icons.qr_code, size: 24),
+                  label: const Text(
+                    'Bayar Sekarang dengan QR Code',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0067b3),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
         ],
       ),
     );
@@ -527,36 +569,47 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         'date': order.orderedAt,
         'completed': true,
       },
-      if (order.paidAt != null)
+      if (order.status == 'cancelled')
         {
-          'title': 'Pembayaran Dikonfirmasi',
-          'date': order.paidAt,
+          'title': 'Pembayaran Dibatalkan',
+          'date': order.orderedAt,
           'completed': true,
-        },
-      if (order.status == 'packing' || order.status == 'delivery' || order.status == 'finished')
-        {
-          'title': 'Pesanan Sedang Dikemas',
-          'date': order.paidAt,
-          'completed': true,
-        },
-      if (order.deliveredAt != null)
-        {
-          'title': 'Pesanan Dikirim',
-          'date': order.deliveredAt,
-          'completed': true,
-        },
-      if (order.finishedAt != null)
-        {
-          'title': 'Pesanan Selesai',
-          'date': order.finishedAt,
-          'completed': true,
-        },
+          'isCancelled': true,
+        }
+      else ...[
+        if (order.paidAt != null)
+          {
+            'title': 'Pembayaran Dikonfirmasi',
+            'date': order.paidAt,
+            'completed': true,
+          },
+        if (order.status == 'packing' || order.status == 'delivery' || order.status == 'finished')
+          {
+            'title': 'Pesanan Sedang Dikemas',
+            'date': order.paidAt,
+            'completed': true,
+          },
+        if (order.deliveredAt != null)
+          {
+            'title': 'Pesanan Dikirim',
+            'date': order.deliveredAt,
+            'completed': true,
+          },
+        if (order.finishedAt != null)
+          {
+            'title': 'Pesanan Selesai',
+            'date': order.finishedAt,
+            'completed': true,
+          },
+      ],
     ];
 
     return Column(
       children: List.generate(timeline.length, (index) {
         final item = timeline[index];
         final isLast = index == timeline.length - 1;
+        final isCancelled = item['isCancelled'] == true;
+        final statusColor = isCancelled ? Colors.red : Colors.green;
         
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,13 +621,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   height: 20,
                   decoration: BoxDecoration(
                     color: item['completed'] 
-                        ? Colors.green 
+                        ? statusColor
                         : Colors.grey.shade300,
                     shape: BoxShape.circle,
                   ),
                   child: item['completed']
-                      ? const Icon(
-                          Icons.check,
+                      ? Icon(
+                          isCancelled ? Icons.close : Icons.check,
                           size: 14,
                           color: Colors.white,
                         )
@@ -585,7 +638,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     width: 2,
                     height: 40,
                     color: item['completed']
-                        ? Colors.green
+                        ? statusColor
                         : Colors.grey.shade300,
                   ),
               ],

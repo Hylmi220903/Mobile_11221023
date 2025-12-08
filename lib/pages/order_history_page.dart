@@ -5,19 +5,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database.dart';
 import '../widgets/main_layout.dart';
 
-class MyOrdersPage extends StatefulWidget {
-  const MyOrdersPage({super.key});
+class OrderHistoryPage extends StatefulWidget {
+  const OrderHistoryPage({super.key});
 
   @override
-  State<MyOrdersPage> createState() => _MyOrdersPageState();
+  State<OrderHistoryPage> createState() => _OrderHistoryPageState();
 }
 
-class _MyOrdersPageState extends State<MyOrdersPage> {
+class _OrderHistoryPageState extends State<OrderHistoryPage> {
   int? _currentUserId;
   bool _isLoading = true;
   late AppDatabase _database;
   List<OrderWithDetails> _allBuyerOrders = [];
-  List<OrderWithDetails> _allSellerOrders = [];
 
   @override
   void initState() {
@@ -28,7 +27,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   Future<void> _initDatabase() async {
     _database = await AppDatabase.getInstance();
     await _checkAuth();
-  }
+  } 
 
   Future<void> _checkAuth() async {
     final prefs = await SharedPreferences.getInstance();
@@ -50,16 +49,11 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     if (_currentUserId == null) return;
     
     try {
-      // Check and cancel expired payment orders
-      await _cancelExpiredOrders();
-      
       final buyerOrders = await _database.orderDao.getBuyerOrders(_currentUserId!);
-      final sellerOrders = await _database.orderDao.getSellerOrders(_currentUserId!);
       
       if (mounted) {
         setState(() {
           _allBuyerOrders = buyerOrders;
-          _allSellerOrders = sellerOrders;
           _isLoading = false;
         });
       }
@@ -73,40 +67,27 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
     }
   }
 
-  Future<void> _cancelExpiredOrders() async {
-    try {
-      final expiredOrders = await _database.orderDao.getExpiredPaymentOrders();
-      
-      for (var order in expiredOrders) {
-        await _database.orderDao.updateOrderStatus(order.id, 'cancelled');
-      }
-      
-      if (expiredOrders.isNotEmpty) {
-        print('Cancelled ${expiredOrders.length} expired orders');
-      }
-    } catch (e) {
-      print('Error cancelling expired orders: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 3,
+      currentIndex: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            'My Orders',
+            'Order History',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _currentUserId == null
                 ? _buildLoginPrompt()
                 : DefaultTabController(
-                    length: 6,
+                    length: 2,
                     child: Column(
                       children: [
                         _buildTabBar(context),
@@ -114,10 +95,6 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
                         Expanded(
                           child: TabBarView(
                             children: [
-                              _buildMyProductTab(),
-                              _buildOrderList('payment'),
-                              _buildOrderList('packing'),
-                              _buildOrderList('delivery'),
                               _buildOrderList('finished'),
                               _buildOrderList('cancelled'),
                             ],
@@ -152,7 +129,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'You need to login to view your orders',
+              'You need to login to view your order history',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -185,114 +162,14 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   PreferredSizeWidget _buildTabBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return TabBar(
-      isScrollable: true,
       labelColor: colorScheme.primary,
       unselectedLabelColor: Colors.grey.shade600,
       indicatorColor: colorScheme.primary,
       labelStyle: const TextStyle(fontWeight: FontWeight.w700),
       tabs: const [
-        Tab(text: 'My Product'),
-        Tab(text: 'Payment'),
-        Tab(text: 'Packing'),
-        Tab(text: 'Delivery'),
         Tab(text: 'Finished'),
         Tab(text: 'Cancelled'),
       ],
-    );
-  }
-
-  Widget _buildMyProductTab() {
-    final onPayment = _allSellerOrders.where((o) => o.order.status == 'payment').toList();
-    final needDeliver = _allSellerOrders.where((o) => o.order.status == 'packing').toList();
-    final done = _allSellerOrders.where((o) => o.order.status == 'finished').toList();
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildDropdownSection('On Payment', onPayment, Icons.payment),
-          const SizedBox(height: 8),
-          _buildDropdownSection('Need to deliver', needDeliver, Icons.local_shipping_outlined),
-          const SizedBox(height: 8),
-          _buildDropdownSection('Done Order', done, Icons.check_circle_outline),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdownSection(String title, List<OrderWithDetails> orders, IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          leading: Icon(icon, color: const Color(0xFF0067b3)),
-          title: Row(
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0067b3).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${orders.length}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0067b3),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          children: [
-            if (orders.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: Text(
-                    'Belum ada pesanan di status ini',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(
-                  children: orders.map((order) => _OrderCard(
-                        orderDetails: order,
-                        isSellerView: true,
-                      )).toList(),
-                ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -473,39 +350,6 @@ class _OrderCard extends StatelessWidget {
               ),
             ],
           ),
-          
-          // Payment timer and button for payment status
-          if (order.status == 'payment' && order.paymentDeadline != null) ...[
-            const SizedBox(height: 10),
-            _PaymentTimer(expiresAt: order.paymentDeadline!),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Navigate to payment page with QR code
-                  context.push('/payment', extra: {
-                    'amount': order.priceAtPurchase * order.quantity,
-                    'orderCode': 'ORD-${order.id}',
-                    'productName': '${product.name} ${product.model}',
-                    'quantity': order.quantity,
-                    'qrContent': 'ORDER_${order.id}_${order.buyerId}_${order.priceAtPurchase * order.quantity}',
-                    'expiresAt': order.paymentDeadline!,
-                  });
-                },
-                icon: const Icon(Icons.qr_code, size: 20),
-                label: const Text('Bayar Sekarang'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0067b3),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
       ),
@@ -527,70 +371,6 @@ class _OrderCard extends StatelessWidget {
       default:
         return Colors.grey;
     }
-  }
-}
-
-class _PaymentTimer extends StatefulWidget {
-  final DateTime expiresAt;
-
-  const _PaymentTimer({required this.expiresAt});
-
-  @override
-  State<_PaymentTimer> createState() => _PaymentTimerState();
-}
-
-class _PaymentTimerState extends State<_PaymentTimer> {
-  late Duration _remaining;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _remaining = widget.expiresAt.difference(DateTime.now());
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-  }
-
-  void _tick() {
-    final left = widget.expiresAt.difference(DateTime.now());
-    if (left.isNegative) {
-      _timer?.cancel();
-    }
-    setState(() {
-      _remaining = left.isNegative ? Duration.zero : left;
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isExpired = _remaining.inSeconds <= 0;
-    final colorScheme = Theme.of(context).colorScheme;
-    final minutes = (_remaining.inSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_remaining.inSeconds % 60).toString().padLeft(2, '0');
-
-    return Row(
-      children: [
-        Icon(
-          Icons.timer_outlined,
-          size: 16,
-          color: isExpired ? Colors.red : colorScheme.primary,
-        ),
-        const SizedBox(width: 6),
-        Text(
-          isExpired ? 'Waktu habis' : '$minutes:$seconds sebelum kadaluarsa',
-          style: TextStyle(
-            color: isExpired ? Colors.red : colorScheme.primary,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
   }
 }
 

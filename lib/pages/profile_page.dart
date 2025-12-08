@@ -215,7 +215,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 }
               }),
-              _MenuItem(Icons.history, 'Order History', () {}),
+              _MenuItem(Icons.history, 'Order History', () {
+                if (isLoggedIn) {
+                  context.push('/order-history');
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Silakan login terlebih dahulu')),
+                  );
+                }
+              }),
             ]),
             
             const SizedBox(height: 16),
