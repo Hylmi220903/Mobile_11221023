@@ -28,7 +28,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
   Future<void> _initDatabase() async {
     _database = await AppDatabase.getInstance();
     await _checkAuth();
-  }
+  } 
 
   Future<void> _checkAuth() async {
     final prefs = await SharedPreferences.getInstance();

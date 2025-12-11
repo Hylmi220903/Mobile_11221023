@@ -191,7 +191,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 }
               }),
-              _MenuItem(Icons.payment_outlined, 'Payment Methods', () {}),
             ]),
             
             const SizedBox(height: 16),
@@ -224,14 +223,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   );
                 }
               }),
-            ]),
-            
-            const SizedBox(height: 16),
-            
-            _buildMenuSection('Support', [
-              _MenuItem(Icons.help_outline, 'Help Center', () {}),
-              _MenuItem(Icons.info_outline, 'About App', () {}),
-              _MenuItem(Icons.privacy_tip_outlined, 'Privacy Policy', () {}),
             ]),
             
             const SizedBox(height: 24),
