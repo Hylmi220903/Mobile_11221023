@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database.dart';
 
 class OrderDetailPage extends StatefulWidget {
@@ -20,6 +21,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   bool _isLoading = true;
   String? _buyerPhone;
   String? _buyerEmail;
+  AddressesData? _buyerAddress;
+  int? _currentUserId;
 
   @override
   void initState() {
@@ -29,6 +32,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   Future<void> _initDatabase() async {
     _database = await AppDatabase.getInstance();
+    final prefs = await SharedPreferences.getInstance();
+    _currentUserId = prefs.getInt('userId');
     await _loadOrderDetails();
   }
 
@@ -46,6 +51,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         // Get buyer details
         final buyer = await _database.userDao.getUserById(order.buyerId);
         
+        // Get buyer's main address
+        final buyerAddress = await _database.addressDao.getMainAddress(order.buyerId);
+        
         if (mounted) {
           setState(() {
             _orderDetails = OrderWithDetails(
@@ -56,6 +64,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             );
             _buyerPhone = buyer.phoneNumber;
             _buyerEmail = buyer.email;
+            _buyerAddress = buyerAddress;
             _isLoading = false;
           });
         }
@@ -319,6 +328,68 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
           const SizedBox(height: 8),
 
+          // Buyer Address
+          if (_buyerAddress != null)
+            _buildSectionCard(
+              title: 'Alamat Pembeli',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 20,
+                        color: Colors.grey.shade700,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _buyerAddress!.recipientName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _buyerAddress!.phoneNumber,
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${_buyerAddress!.streetAddress}${_buyerAddress!.detailAddress != null ? ', ${_buyerAddress!.detailAddress}' : ''}',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${_buyerAddress!.district}, ${_buyerAddress!.city}, ${_buyerAddress!.province} ${_buyerAddress!.postalCode}',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+          if (_buyerAddress != null) const SizedBox(height: 8),
+
           // Shipping Information
           _buildSectionCard(
             title: 'Informasi Pengiriman',
@@ -369,8 +440,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
           const SizedBox(height: 16),
 
-          // Payment Button for unpaid orders
-          if (order.status == 'payment' && order.paymentDeadline != null) ...[
+          // Payment Button for unpaid orders (only show for buyer)
+          if (order.status == 'payment' && 
+              order.paymentDeadline != null && 
+              _currentUserId != null && 
+              _currentUserId == order.buyerId) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
@@ -378,6 +452,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     context.push('/payment', extra: {
+                      'orderId': order.id,
                       'amount': order.priceAtPurchase * order.quantity,
                       'orderCode': 'ORD-${order.id}',
                       'productName': '${product.name} ${product.model}',

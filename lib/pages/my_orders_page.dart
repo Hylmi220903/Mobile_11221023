@@ -474,8 +474,10 @@ class _OrderCard extends StatelessWidget {
             ],
           ),
           
-          // Payment timer and button for payment status
-          if (order.status == 'payment' && order.paymentDeadline != null) ...[
+          // Payment timer and button for payment status (only for buyer)
+          if (order.status == 'payment' && 
+              order.paymentDeadline != null && 
+              !isSellerView) ...[
             const SizedBox(height: 10),
             _PaymentTimer(expiresAt: order.paymentDeadline!),
             const SizedBox(height: 10),
@@ -485,6 +487,7 @@ class _OrderCard extends StatelessWidget {
                 onPressed: () {
                   // Navigate to payment page with QR code
                   context.push('/payment', extra: {
+                    'orderId': order.id,
                     'amount': order.priceAtPurchase * order.quantity,
                     'orderCode': 'ORD-${order.id}',
                     'productName': '${product.name} ${product.model}',

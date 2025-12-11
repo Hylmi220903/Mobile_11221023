@@ -158,6 +158,7 @@ final GoRouter router = GoRouter(
         }
 
         return PaymentPage(
+          orderId: extra['orderId'] as int,
           amount: extra['amount'] as double,
           orderCode: extra['orderCode'] as String,
           productName: extra['productName'] as String,

@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../database/database.dart';
 
 class PaymentPage extends StatefulWidget {
+  final int orderId;
   final double amount;
   final String orderCode;
   final String productName;
@@ -14,6 +16,7 @@ class PaymentPage extends StatefulWidget {
 
   const PaymentPage({
     super.key,
+    required this.orderId,
     required this.amount,
     required this.orderCode,
     required this.productName,
@@ -82,10 +85,39 @@ class _PaymentPageState extends State<PaymentPage> {
     }
 
     setState(() => _isVerifying = true);
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _isVerifying = false);
-    context.goNamed('my_orders');
+    
+    try {
+      // Update order status to packing
+      final database = await AppDatabase.getInstance();
+      await database.orderDao.updateOrderStatus(widget.orderId, 'packing');
+      
+      await Future.delayed(const Duration(milliseconds: 900));
+      
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pembayaran berhasil diverifikasi!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Navigate back to my orders
+      context.goNamed('my_orders');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memverifikasi pembayaran: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isVerifying = false);
+      }
+    }
   }
 
   @override
