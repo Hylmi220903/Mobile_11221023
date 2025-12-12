@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -142,7 +143,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
-  void _handleCheckout() {
+  Future<void> _handleCheckout() async {
     if (_selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -153,31 +154,73 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
+    if (_userId == null || _product == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan. Silakan coba lagi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final now = DateTime.now();
-    final orderCode = 'ORD-${_userId ?? 'GUEST'}-${now.millisecondsSinceEpoch}';
+    final orderCode = 'ORD-$_userId-${now.millisecondsSinceEpoch}';
     final expiresAt = now.add(const Duration(minutes: 30));
 
-    // Generate QR payload based on order details to keep it unique per checkout
-    final qrContent = [
-      'QRIS-ITKBARKAS',
-      'order:$orderCode',
-      'product:${_product?.id ?? '-'}',
-      'qty:${widget.quantity}',
-      'amount:${_grandTotal.toStringAsFixed(0)}',
-      'ts:${now.toIso8601String()}',
-    ].join('|');
+    // Get shipping type name
+    final shippingName = _deliveryOptions[_selectedDelivery]?['name'] ?? 'Reguler';
 
-    context.pushNamed(
-      'payment',
-      extra: {
-        'amount': _grandTotal,
-        'orderCode': orderCode,
-        'productName': _product?.name ?? 'Produk',
-        'quantity': widget.quantity,
-        'qrContent': qrContent,
-        'expiresAt': expiresAt,
-      },
-    );
+    try {
+      // Create the order first
+      final orderId = await _database.orderDao.createOrder(
+        OrdersCompanion.insert(
+          buyerId: _userId!,
+          sellerId: _store?.ownerId ?? _userId!,
+          productId: _product!.id,
+          quantity: widget.quantity,
+          priceAtPurchase: _product!.price,
+          shippingType: shippingName,
+          status: 'pending',
+          orderedAt: Value(now),
+          paymentDeadline: Value(expiresAt),
+        ),
+      );
+
+      // Generate QR payload based on order details to keep it unique per checkout
+      final qrContent = [
+        'QRIS-ITKBARKAS',
+        'order:$orderCode',
+        'product:${_product!.id}',
+        'qty:${widget.quantity}',
+        'amount:${_grandTotal.toStringAsFixed(0)}',
+        'ts:${now.toIso8601String()}',
+      ].join('|');
+
+      if (!mounted) return;
+
+      context.pushNamed(
+        'payment',
+        extra: {
+          'orderId': orderId,
+          'amount': _grandTotal,
+          'orderCode': orderCode,
+          'productName': _product!.name,
+          'quantity': widget.quantity,
+          'qrContent': qrContent,
+          'expiresAt': expiresAt,
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuat pesanan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override

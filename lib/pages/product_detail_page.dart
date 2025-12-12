@@ -541,15 +541,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       const SizedBox(width: 12),
 
                       // Add to Cart Button
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _addToCart,
-                          icon: const Icon(Icons.shopping_cart_outlined, size: 20),
-                          label: const Text('Add to Cart'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
+                      OutlinedButton(
+                        onPressed: _addToCart,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         ),
+                        child: const Icon(Icons.shopping_cart_outlined, size: 24),
                       ),
 
                       const SizedBox(width: 12),

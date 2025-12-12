@@ -47,8 +47,8 @@ class _MyProductsPageState extends State<MyProductsPage> {
       final stores = await _database.storeDao.getStoresByOwner(_currentUserId!);
       if (stores.isNotEmpty) {
         _userStoreId = stores.first.id;
-        // Get products from user's store
-        final products = await _database.productDao.getProductsByStore(_userStoreId!);
+        // Get all products from user's store (including out of stock)
+        final products = await _database.productDao.getProductsByStoreIncludingOutOfStock(_userStoreId!);
         setState(() {
           _myProducts = products;
           _isLoading = false;

@@ -31,18 +31,28 @@ class ProductDao extends DatabaseAccessor<AppDatabase> with _$ProductDaoMixin {
     );
   }
 
-  // Get all products
+  // Get all products (only with stock > 0)
   Future<List<Product>> getAllProducts() {
+    return (select(products)..where((tbl) => tbl.stock.isBiggerThanValue(0))).get();
+  }
+
+  // Get all products including out of stock (for admin/seller view)
+  Future<List<Product>> getAllProductsIncludingOutOfStock() {
     return select(products).get();
   }
 
-  // Get products by category
+  // Get products by category (only with stock > 0)
   Future<List<Product>> getProductsByCategory(String category) {
-    return (select(products)..where((tbl) => tbl.category.equals(category))).get();
+    return (select(products)..where((tbl) => tbl.category.equals(category) & tbl.stock.isBiggerThanValue(0))).get();
   }
 
-  // Get products by store (seller)
+  // Get products by store (seller) - only with stock > 0 for public view
   Future<List<Product>> getProductsByStore(int storeId) {
+    return (select(products)..where((tbl) => tbl.storeId.equals(storeId) & tbl.stock.isBiggerThanValue(0))).get();
+  }
+
+  // Get all products by store including out of stock (for seller's own view)
+  Future<List<Product>> getProductsByStoreIncludingOutOfStock(int storeId) {
     return (select(products)..where((tbl) => tbl.storeId.equals(storeId))).get();
   }
 

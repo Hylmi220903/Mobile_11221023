@@ -87,8 +87,17 @@ class _PaymentPageState extends State<PaymentPage> {
     setState(() => _isVerifying = true);
     
     try {
-      // Update order status to packing
+      // Update order status to packing and reduce stock
       final database = await AppDatabase.getInstance();
+      
+      // Get order details to know the product and quantity
+      final order = await database.orderDao.getOrderById(widget.orderId);
+      if (order != null) {
+        // Reduce product stock
+        await database.productDao.incrementSoldCount(order.productId, order.quantity);
+      }
+      
+      // Update order status to packing
       await database.orderDao.updateOrderStatus(widget.orderId, 'packing');
       
       await Future.delayed(const Duration(milliseconds: 900));

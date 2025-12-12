@@ -209,25 +209,7 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                         
-                        const SizedBox(height: 8),
-                        
-                        // Forgot Password
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Forgot password - Coming soon!'),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            },
-                            child: const Text('Forgot Password?'),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 32),
                         
                         // Login Button
                         FilledButton(
