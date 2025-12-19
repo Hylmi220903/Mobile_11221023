@@ -130,7 +130,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         selectedAddress: _selectedAddress,
         onAddNew: () async {
           Navigator.pop(context);
-          final added = await context.push('/add-address');
+          final added = await context.push('/profile/addresses/add');
           if (added == true) {
             await _loadData();
           }

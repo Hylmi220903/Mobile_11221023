@@ -238,7 +238,7 @@ class _OrderCard extends StatelessWidget {
     final storeName = orderDetails.storeName;
 
     return InkWell(
-      onTap: () => context.push('/order/${order.id}'),
+      onTap: () => context.push('/order-history/${order.id}'),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),

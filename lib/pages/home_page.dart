@@ -158,7 +158,7 @@ class _HomePageState extends State<HomePage> {
         initialQuantity: 1,
         onProceed: (selectedQuantity) {
           context.push(
-            '/checkout',
+            '/cart/checkout',
             extra: {
               'product': product,
               'quantity': selectedQuantity,

@@ -361,7 +361,7 @@ class _OrderCard extends StatelessWidget {
     final storeName = orderDetails.storeName;
 
     return InkWell(
-      onTap: () => context.push('/order/${order.id}'),
+      onTap: () => context.push('/order-history/${order.id}'),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -486,7 +486,7 @@ class _OrderCard extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {
                   // Navigate to payment page with QR code
-                  context.push('/payment', extra: {
+                  context.push('/cart/payment', extra: {
                     'orderId': order.id,
                     'amount': order.priceAtPurchase * order.quantity,
                     'orderCode': 'ORD-${order.id}',

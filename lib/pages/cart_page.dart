@@ -489,7 +489,7 @@ class _CartPageState extends State<CartPage> {
                     
                     if (mounted) {
                       context.push(
-                        '/checkout',
+                        '/cart/checkout',
                         extra: {
                           'product': firstItem.product,
                           'quantity': firstItem.cartItem.quantity,

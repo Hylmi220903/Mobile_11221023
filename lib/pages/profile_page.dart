@@ -175,7 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildMenuSection('Account', [
               _MenuItem(Icons.person_outline, 'Edit Profile', () {
                 if (isLoggedIn) {
-                  context.push('/edit-profile').then((_) => _loadUserData());
+                  context.push('/profile/edit').then((_) => _loadUserData());
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Silakan login terlebih dahulu')),
@@ -184,7 +184,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }),
               _MenuItem(Icons.location_on, 'Addresses', () {
                 if (isLoggedIn) {
-                  context.push('/addresses');
+                  context.push('/profile/addresses');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Silakan login terlebih dahulu')),
@@ -207,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }),
               _MenuItem(Icons.favorite_outline, 'Wishlist', () {
                 if (isLoggedIn) {
-                  context.push('/wishlist');
+                  context.push('/profile/wishlist');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Silakan login terlebih dahulu')),

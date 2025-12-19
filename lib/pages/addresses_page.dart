@@ -142,7 +142,7 @@ class _AddressesPageState extends State<AddressesPage> {
                   height: 50,
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      final result = await context.push('/add-address');
+                      final result = await context.push('/profile/addresses/add');
                       if (result == true) {
                         await _loadAddresses();
                       }
@@ -272,7 +272,7 @@ class _AddressesPageState extends State<AddressesPage> {
       ),
       child: InkWell(
         onTap: () async {
-          final result = await context.push('/edit-address/${address.id}');
+          final result = await context.push('/profile/addresses/${address.id}');
           if (result == true) {
             await _loadAddresses();
           }
@@ -317,7 +317,7 @@ class _AddressesPageState extends State<AddressesPage> {
                     ),
                     onSelected: (value) async {
                       if (value == 'edit') {
-                        final result = await context.push('/edit-address/${address.id}');
+                        final result = await context.push('/profile/addresses/${address.id}');
                         if (result == true) {
                           await _loadAddresses();
                         }

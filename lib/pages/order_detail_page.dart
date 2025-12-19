@@ -451,7 +451,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    context.push('/payment', extra: {
+                    context.push('/cart/payment', extra: {
                       'orderId': order.id,
                       'amount': order.priceAtPurchase * order.quantity,
                       'orderCode': 'ORD-${order.id}',

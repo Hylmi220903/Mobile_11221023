@@ -141,7 +141,7 @@ class _MyProductsPageState extends State<MyProductsPage> {
                     : _buildProductList(),
         floatingActionButton: _currentUserId != null
             ? FloatingActionButton.extended(
-                onPressed: () => context.push('/add-product').then((_) => _loadMyProducts()),
+                onPressed: () => context.push('/my-products/add').then((_) => _loadMyProducts()),
                 icon: const Icon(Icons.add),
                 label: const Text('Add Product'),
                 backgroundColor: colorScheme.primary,
@@ -260,7 +260,7 @@ class _MyProductsPageState extends State<MyProductsPage> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: InkWell(
-            onTap: () => context.push('/edit-product/${product.id}').then((_) => _loadMyProducts()),
+            onTap: () => context.push('/my-products/${product.id}').then((_) => _loadMyProducts()),
             borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.all(12),

@@ -152,7 +152,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         initialQuantity: quantity,
         onProceed: (selectedQuantity) {
           context.push(
-            '/checkout',
+            '/cart/checkout',
             extra: {
               'product': product,
               'quantity': selectedQuantity,
